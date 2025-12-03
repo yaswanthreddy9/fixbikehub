@@ -11,7 +11,7 @@
     body{background:#f4f4f4;color:#222}
     header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
     .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
-    .logo{font-size:20px;font-weight:700}
+    .logo{font-size:20px;font-weight:700;cursor:pointer}
     .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
     .search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px;font-size:14px}
     .admin-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:16px;min-width:40px;text-align:center}
@@ -24,6 +24,10 @@
     .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
     iframe{width:100%;height:220px;border:none}
     .video-info{padding:10px;font-size:14px;font-weight:600}
+    .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+    .admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer}
+    .edit-btn{background:#f59e0b;color:white}
+    .delete-btn{background:#ef4444;color:white}
     #empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
 
     /* ---- ADMIN PANEL ---- */
@@ -48,7 +52,6 @@
       .toolbar{width:100%;justify-content:center}
       .search-box{flex:1}
       .search-box input{width:100%}
-      .admin-btn{padding:6px 10px;font-size:14px}
       iframe{height:240px}
     }
   </style>
@@ -57,13 +60,13 @@
 <body>
   <header>
     <div class="nav">
-      <div class="logo">BikeFix Hub</div>
+      <div class="logo" id="logo">BikeFix Hub</div>
       <div class="toolbar">
         <div class="search-box">
           <input id="searchInput" placeholder="Search videos.." />
         </div>
         <button id="darkToggle" class="admin-btn">🌙</button>
-        <button id="adminBtn" class="admin-btn">🛠</button>
+        <!-- No visible admin button anymore -->
       </div>
     </div>
   </header>
@@ -86,7 +89,7 @@
     <div id="adminPanel">
       <div id="adminNote">
         Admin status: <b id="adminStatus">Not logged in</b><br>
-        Login with Google account: <b>myeswanthreddy321@gmail.com</b>
+        (Secret: tap "BikeFix Hub" 5 times quickly to open Google login)
       </div>
 
       <h3>Add Video</h3>
@@ -147,6 +150,8 @@
       const videoGrid = document.getElementById("videos");
       const empty = document.getElementById("empty");
       const adminStatus = document.getElementById("adminStatus");
+      const adminPanel = document.getElementById("adminPanel");
+      const logo = document.getElementById("logo");
 
       function setAdminStatus() {
         adminStatus.textContent = adminUnlocked ? "Logged in" : "Not logged in";
@@ -179,10 +184,23 @@
 
           const card=document.createElement("div");
           card.className="video-card";
+          card.dataset.id = v.id;
+
+          const adminBtns = adminUnlocked ? `
+            <div class="admin-actions">
+              <button class="edit-btn" data-id="${v.id}">Edit</button>
+              <button class="delete-btn" data-id="${v.id}">Delete</button>
+            </div>` : "";
 
           card.innerHTML=`
             <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
-            <div class="video-info">${v.title}</div>
+            <div class="video-info">
+              ${v.title}
+              <div class="video-meta">
+                <span>${v.brand.toUpperCase()} • ${v.model}</span>
+                ${adminBtns}
+              </div>
+            </div>
           `;
           videoGrid.appendChild(card);
         });
@@ -208,14 +226,12 @@
           if(i===0) activeModel=m;
         });
       }
-
       loadModels();
 
       // Brand buttons
       document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
         btn.onclick=()=>{
           document.querySelectorAll("#brandButtons .filter-btn").forEach(x=>x.classList.remove("active"));
-          btn.addEventListener
           btn.classList.add("active");
           activeBrand=btn.dataset.brand;
           loadModels();
@@ -265,39 +281,48 @@
       };
       bSel.onchange();
 
-      // ---------- ADMIN LOGIN (GOOGLE ONLY) ----------
-      const adminBtn=document.getElementById("adminBtn");
-      const adminPanel=document.getElementById("adminPanel");
+      // ---------- HIDDEN ADMIN LOGIN (click logo 5 times) ----------
+      let logoClicks = 0;
+      let logoTimer = null;
 
-      adminBtn.onclick = () => {
-        if (adminUnlocked) {
-          adminPanel.style.display = "block";
-          return;
-        }
-
+      function triggerAdminLogin(){
         auth.signInWithPopup(provider)
-          .then(res => {
+          .then(res=>{
             const email = res.user && res.user.email;
-            if (email === ADMIN_EMAIL) {
+            if(email === ADMIN_EMAIL){
               adminUnlocked = true;
               setAdminStatus();
               adminPanel.style.display = "block";
               alert("Admin login success");
-            } else {
+              render(); // show edit/delete buttons
+            }else{
               alert("This Google account is not allowed.");
               auth.signOut();
             }
           })
-          .catch(err => {
+          .catch(err=>{
             console.error("Google login failed:", err);
             alert("Google login failed: " + err.code);
           });
+      }
+
+      logo.onclick = () => {
+        logoClicks++;
+        if(logoClicks === 1){
+          // start timer
+          logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2000);
+        }
+        if(logoClicks >= 5){
+          logoClicks = 0;
+          clearTimeout(logoTimer);
+          triggerAdminLogin();
+        }
       };
 
       // ---------- ADD VIDEO (requires admin) ----------
       document.getElementById("addVideoBtn").onclick=()=>{
         if(!adminUnlocked){
-          alert("Login as admin first.");
+          alert("Login as admin first (tap logo 5 times).");
           return;
         }
         const brand=bSel.value;
@@ -324,6 +349,34 @@
           alert("Error saving video: " + err.code);
         });
       };
+
+      // ---------- EDIT / DELETE (admin only) ----------
+      document.addEventListener("click", (e)=>{
+        if(!adminUnlocked) return;
+
+        if(e.target.classList.contains("edit-btn")){
+          const id=e.target.dataset.id;
+          const vid = videos.find(v=>v.id===id);
+          if(!vid) return;
+          const updated = prompt("Edit title:", vid.title);
+          if(!updated) return;
+          db.collection("videos").doc(id).update({ title:updated.trim() })
+            .catch(err=>{
+              console.error(err);
+              alert("Update failed: " + err.code);
+            });
+        }
+
+        if(e.target.classList.contains("delete-btn")){
+          const id=e.target.dataset.id;
+          if(!confirm("Delete this video?")) return;
+          db.collection("videos").doc(id).delete()
+            .catch(err=>{
+              console.error(err);
+              alert("Delete failed: " + err.code);
+            });
+        }
+      });
 
       // ---------- FIRESTORE LISTENER ----------
       db.collection("videos").orderBy("createdAt","asc")
