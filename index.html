@@ -14,7 +14,10 @@
     .logo{font-size:20px;font-weight:700;cursor:pointer}
     .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
     .search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px;font-size:14px}
-    .header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:16px;min-width:40px;text-align:center}
+    .header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:18px;min-width:40px;text-align:center}
+
+    .desktop-only{display:flex;align-items:center;gap:8px}
+    .mobile-only{display:none}
 
     .lang-strip{max-width:190px;overflow-x:auto}
     #langScroll{display:flex;gap:4px}
@@ -35,12 +38,8 @@
     .last-updated{font-size:11px;color:#666}
 
     .video-grid{display:grid;gap:15px;margin-top:20px}
-    .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden;cursor:pointer}
-    .thumb-wrapper{position:relative;width:100%;padding-top:56.25%;background:#000;overflow:hidden}
-    .thumb-wrapper img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
-    .thumb-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,.1))}
-    .play-btn{width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.7);border:2px solid #fff;display:flex;align-items:center;justify-content:center}
-    .play-btn::before{content:"";border-left:14px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}
+    .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+    iframe{width:100%;height:220px;border:none}
     .video-info{padding:10px;font-size:14px;font-weight:600}
     .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:#555}
     .admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer}
@@ -59,6 +58,16 @@
     #backupRow input{display:none}
     #logoutBtn{background:#ef4444;margin-left:auto}
 
+    /* ---- SIDE MENU (mobile) ---- */
+    .side-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30;display:none}
+    .side-backdrop.show{display:block}
+    .side-menu{position:fixed;top:0;right:-260px;width:260px;height:100%;background:#111827;color:#fff;z-index:40;padding:16px;transition:right .25s ease;display:flex;flex-direction:column;gap:16px}
+    .side-menu.open{right:0}
+    .side-header{display:flex;justify-content:space-between;align-items:center}
+    .close-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+    .side-section{font-size:13px}
+    .side-section-title{font-size:12px;margin-bottom:4px;color:#e5e7eb}
+
     /* ---- DARK MODE ---- */
     body.dark{background:#0f0f0f;color:white}
     body.dark header{background:#000}
@@ -75,9 +84,11 @@
     /* --- MOBILE LAYOUT --- */
     @media(max-width:600px){
       .nav{flex-direction:column;align-items:stretch}
-      .toolbar{width:100%;justify-content:center;flex-wrap:wrap}
+      .toolbar{width:100%;justify-content:center;flex-wrap:nowrap}
       .search-box{flex:1}
       .search-box input{width:100%}
+      .desktop-only{display:none}
+      .mobile-only{display:inline-flex}
     }
   </style>
 </head>
@@ -90,19 +101,51 @@
         <div class="search-box">
           <input id="searchInput" placeholder="Search videos.." />
         </div>
-        <button id="darkToggle" class="header-btn">🌙</button>
-        <button id="refreshBtn" class="header-btn">⟳</button>
-        <div class="lang-strip">
-          <div id="langScroll">
-            <button class="lang-pill active" data-lang="en">English</button>
-            <button class="lang-pill" data-lang="hi">हिन्दी</button>
-            <button class="lang-pill" data-lang="te">తెలుగు</button>
-            <button class="lang-pill" data-lang="ta">தமிழ்</button>
+
+        <!-- Desktop controls -->
+        <div class="desktop-only">
+          <button id="darkToggle" class="header-btn">🌙</button>
+          <div class="lang-strip">
+            <div id="langScroll">
+              <button class="lang-pill lang-pill-main" data-lang="en">English</button>
+              <button class="lang-pill lang-pill-main" data-lang="hi">हिन्दी</button>
+              <button class="lang-pill lang-pill-main" data-lang="te">తెలుగు</button>
+              <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
+            </div>
           </div>
         </div>
+
+        <!-- Mobile menu button -->
+        <button id="menuBtn" class="header-btn mobile-only">☰</button>
       </div>
     </div>
   </header>
+
+  <!-- Side menu for mobile -->
+  <div id="sideBackdrop" class="side-backdrop"></div>
+  <div id="sideMenu" class="side-menu">
+    <div class="side-header">
+      <span id="sideTitle">Menu</span>
+      <button id="closeMenu" class="close-btn">✕</button>
+    </div>
+
+    <div class="side-section">
+      <div class="side-section-title">Theme</div>
+      <button id="darkToggleMobile" class="header-btn" style="width:100%;justify-content:center;">🌙</button>
+    </div>
+
+    <div class="side-section">
+      <div class="side-section-title">Language</div>
+      <div class="lang-strip">
+        <div id="langScrollMobile">
+          <button class="lang-pill lang-pill-mobile" data-lang="en">English</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="hi">हिन्दी</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="te">తెలుగు</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="ta">தமிழ்</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <main>
     <div class="top-meta">
@@ -207,6 +250,14 @@
       const logo = document.getElementById("logo");
       const lastUpdatedEl = document.getElementById("lastUpdated");
 
+      const menuBtn = document.getElementById("menuBtn");
+      const sideMenu = document.getElementById("sideMenu");
+      const sideBackdrop = document.getElementById("sideBackdrop");
+      const closeMenu = document.getElementById("closeMenu");
+
+      const darkToggle = document.getElementById("darkToggle");
+      const darkToggleMobile = document.getElementById("darkToggleMobile");
+
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
         en:{
@@ -293,9 +344,20 @@
 
       let currentLang = localStorage.getItem("uiLang") || "en";
 
+      function updateLastUpdated(dateObj) {
+        latestUpdated = dateObj;
+        const t = translations[currentLang] || translations.en;
+        if (!dateObj) { lastUpdatedEl.textContent = ""; return; }
+        const d = dateObj;
+        const pad = n => (n < 10 ? "0" + n : n);
+        const str = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        lastUpdatedEl.textContent = `${t.lastUpdatedPrefix} ${str}`;
+      }
+
       function applyLanguage() {
         const t = translations[currentLang] || translations.en;
         document.getElementById("logo").textContent = t.title;
+        document.getElementById("sideTitle").textContent = t.title + " Menu";
         search.placeholder = t.search;
         document.querySelector('[data-i18n="chooseBrand"]').textContent = t.chooseBrand;
         document.querySelector('[data-i18n="chooseModel"]').textContent = t.chooseModel;
@@ -315,27 +377,20 @@
         updateLastUpdated(latestUpdated);
       }
 
-      function updateLastUpdated(dateObj) {
-        latestUpdated = dateObj;
-        const t = translations[currentLang] || translations.en;
-        if (!dateObj) { lastUpdatedEl.textContent = ""; return; }
-        const d = dateObj;
-        const pad = n => (n < 10 ? "0" + n : n);
-        const str = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        lastUpdatedEl.textContent = `${t.lastUpdatedPrefix} ${str}`;
-      }
-
-      // init language pills
-      document.querySelectorAll(".lang-pill").forEach(pill=>{
-        if(pill.dataset.lang === currentLang) pill.classList.add("active");
-        pill.addEventListener("click", ()=>{
-          document.querySelectorAll(".lang-pill").forEach(p=>p.classList.remove("active"));
-          pill.classList.add("active");
-          currentLang = pill.dataset.lang;
-          localStorage.setItem("uiLang", currentLang);
-          applyLanguage();
+      function setupLangPills(selector){
+        document.querySelectorAll(selector).forEach(pill=>{
+          if(pill.dataset.lang === currentLang) pill.classList.add("active");
+          pill.addEventListener("click", ()=>{
+            currentLang = pill.dataset.lang;
+            localStorage.setItem("uiLang", currentLang);
+            document.querySelectorAll(".lang-pill").forEach(p=>p.classList.remove("active"));
+            document.querySelectorAll(`[data-lang="${currentLang}"]`).forEach(p=>p.classList.add("active"));
+            applyLanguage();
+          });
         });
-      });
+      }
+      setupLangPills(".lang-pill-main");
+      setupLangPills(".lang-pill-mobile");
 
       /* ------------ HELPERS ------------ */
       function setAdminStatus() {
@@ -353,10 +408,6 @@
           .replace("www.youtube.com/shorts/","")
           .replace("youtube.com/shorts/","")
           .split(/[?&]/)[0];
-      }
-
-      function buildThumbUrl(ytId){
-        return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
       }
 
       function render(){
@@ -385,12 +436,7 @@
             </div>` : "";
 
           card.innerHTML=`
-            <div class="thumb-wrapper" data-yt="${v.ytId}">
-              <img src="${buildThumbUrl(v.ytId)}" alt="thumbnail">
-              <div class="thumb-overlay">
-                <div class="play-btn"></div>
-              </div>
-            </div>
+            <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
             <div class="video-info">
               ${v.title}
               <div class="video-meta">
@@ -415,7 +461,7 @@
         });
       });
 
-      /* ---------- MODELS ---------- */
+      /* ---------- MODELS & BRAND ---------- */
       function loadModels(){
         const modelArea=document.getElementById("modelButtons");
         modelArea.innerHTML="";
@@ -446,10 +492,8 @@
       const storedBrand = localStorage.getItem("lastBrand");
       if (storedBrand && models[storedBrand]) {
         activeBrand = storedBrand;
-        // update active button after we set up brand buttons below
       }
 
-      // Brand buttons
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
       brandButtons.forEach(btn=>{
         if(btn.dataset.brand === activeBrand) btn.classList.add("active");
@@ -468,27 +512,30 @@
       // Search
       search.oninput=render;
 
-      // Dark mode
-      const darkToggle=document.getElementById("darkToggle");
+      // Dark mode toggle shared
       function applyTheme(){
         const mode=localStorage.getItem("theme");
-        if(mode==="dark"){
-          document.body.classList.add("dark");
-          darkToggle.textContent="☀️";
-        }else{
-          document.body.classList.remove("dark");
-          darkToggle.textContent="🌙";
-        }
+        const isDark = mode==="dark";
+        document.body.classList.toggle("dark", isDark);
+        const icon = isDark ? "☀️" : "🌙";
+        if(darkToggle) darkToggle.textContent = icon;
+        if(darkToggleMobile) darkToggleMobile.textContent = icon;
       }
-      darkToggle.onclick=()=>{
-        const dark=document.body.classList.toggle("dark");
-        localStorage.setItem("theme",dark?"dark":"light");
+      function toggleTheme(){
+        const isDark = !document.body.classList.contains("dark");
+        localStorage.setItem("theme",isDark?"dark":"light");
         applyTheme();
-      };
+      }
+      if(darkToggle) darkToggle.onclick = toggleTheme;
+      if(darkToggleMobile) darkToggleMobile.onclick = toggleTheme;
       applyTheme();
 
-      // Refresh button
-      document.getElementById("refreshBtn").onclick = ()=>location.reload();
+      // Side menu open/close
+      function openMenu(){ sideMenu.classList.add("open"); sideBackdrop.classList.add("show"); }
+      function closeMenuFn(){ sideMenu.classList.remove("open"); sideBackdrop.classList.remove("show"); }
+      menuBtn.onclick = openMenu;
+      closeMenu.onclick = closeMenuFn;
+      sideBackdrop.onclick = closeMenuFn;
 
       // Admin selectors
       const bSel=document.getElementById("adminBrand");
@@ -596,18 +643,6 @@
 
       /* ---------- EDIT / DELETE (admin only) ---------- */
       document.addEventListener("click", (e)=>{
-        // play click (thumbnail)
-        const thumb = e.target.closest(".thumb-wrapper");
-        if(thumb){
-          const ytId = thumb.dataset.yt;
-          // replace thumb with iframe
-          const parent = thumb.parentElement;
-          const iframeWrapper = document.createElement("div");
-          iframeWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>`;
-          parent.replaceChild(iframeWrapper.firstChild, thumb);
-          return;
-        }
-
         if(!adminUnlocked) return;
 
         if(e.target.classList.contains("edit-btn")){
@@ -680,7 +715,6 @@
           try{
             const data = JSON.parse(reader.result);
             if(!Array.isArray(data)) throw new Error("Invalid format");
-            // delete all then insert
             db.collection("videos").get().then(snap=>{
               const batchDel = db.batch();
               snap.forEach(doc=>batchDel.delete(doc.ref));
@@ -740,7 +774,6 @@
         });
 
       /* ---------- PWA MANIFEST + SERVICE WORKER ---------- */
-      // dynamic manifest so we only need this one file
       const manifest = {
         name: "BikeFix Hub",
         short_name: "BikeFix",
