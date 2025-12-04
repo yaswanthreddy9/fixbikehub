@@ -19,7 +19,8 @@
     .desktop-only{display:flex;align-items:center;gap:8px}
     .mobile-only{display:none}
 
-    .lang-strip{max-width:190px;overflow-x:auto}
+    .lang-strip{max-width:190px;overflow-x:auto;scrollbar-width:none}
+    .lang-strip::-webkit-scrollbar{display:none}
     #langScroll{display:flex;gap:4px}
     .lang-pill{padding:4px 10px;border-radius:999px;border:1px solid #666;background:#111;color:#fff;font-size:11px;white-space:nowrap;cursor:pointer;opacity:.8}
     .lang-pill.active{border-color:#facc15;opacity:1;animation:langBlink 1.5s infinite}
@@ -51,6 +52,7 @@
     #adminPanel{display:none;background:#e5e7eb;padding:15px;border-radius:10px;margin-top:20px}
     #adminPanel label{font-size:13px;font-weight:600;margin-top:8px;display:block}
     #adminPanel input,#adminPanel select{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:14px}
+    #adminPanel textarea{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:13px;resize:vertical}
     #adminPanel button{padding:8px 10px;background:#22c55e;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:13px}
     #adminNote{font-size:12px;margin-bottom:6px;color:#555}
     #backupRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
@@ -73,7 +75,7 @@
     body.dark header{background:#000}
     body.dark .filter-btn{background:#1a1a1a;border-color:#333;color:white}
     body.dark .filter-btn.active{background:#2563eb;color:white}
-    body.dark input,body.dark select{background:#111;color:white;border-color:#444}
+    body.dark input,body.dark select,body.dark textarea{background:#111;color:white;border-color:#444}
     body.dark .video-card{background:#1a1a1a}
     body.dark #empty{background:#333;color:#bbb}
     body.dark .view-tab{background:#111;border-color:#444;color:#ddd}
@@ -192,6 +194,13 @@
 
       <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
 
+      <!-- Bulk add -->
+      <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
+      <textarea id="bulkInput" rows="4" placeholder="Example:
+Pulsar 150 clutch | https://youtu.be/xxxx
+NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
+      <button id="bulkAddBtn" type="button">Add Bulk</button>
+
       <div id="backupRow">
         <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
         <label for="importInput" data-i18n="importBackup">Import Backup
@@ -294,7 +303,7 @@
           youtubeLabel:"YouTube URL या ID",
           addVideoButton:"वीडियो जोड़ें",
           exportBackup:"बैकअप एक्सपोर्ट",
-          importBackup:"बैकअप इम्पोर्ट",
+          importBackup:"बैकअप इम्पోర్ట",
           logout:"लॉगआउट",
           lastUpdatedPrefix:"आखिरी अपडेट:",
           viewByBike:"बाइक के अनुसार",
@@ -333,7 +342,7 @@
           videoTitleLabel:"வீடியோ தலைப்பு",
           youtubeLabel:"YouTube URL அல்லது ID",
           addVideoButton:"வீடியோ சேர்க்கவும்",
-          exportBackup:"காப்புப் பிரதி எக்ஸ்போர்ட்",
+          exportBackup:"காப்புப் பிரதி எக்ஸ్పோர்ட்",
           importBackup:"காப்புப் பிரதி இம்போர்ட்",
           logout:"லாக் அவுட்",
           lastUpdatedPrefix:"கடைசியாக புதுப்பிக்கப்பட்டது:",
@@ -638,6 +647,56 @@
         .catch(err=>{
           console.error(err);
           alert("Error saving video: " + err.code);
+        });
+      };
+
+      /* ---------- BULK ADD (requires admin) ---------- */
+      const bulkInput = document.getElementById("bulkInput");
+      const bulkAddBtn = document.getElementById("bulkAddBtn");
+
+      bulkAddBtn.onclick = () => {
+        if(!adminUnlocked){
+          alert("Login as admin first.");
+          return;
+        }
+        const lines = bulkInput.value.split("\n");
+        const brand = bSel.value;
+        const model = mSel.value;
+        const toAdd = [];
+
+        lines.forEach(line=>{
+          const trimmed = line.trim();
+          if(!trimmed) return;
+          const parts = trimmed.split("|");
+          if(parts.length < 2) return;
+          const title = parts[0].trim();
+          const url = parts[1].trim();
+          if(!title || !url) return;
+          const ytId = extractId(url);
+          toAdd.push({brand,model,title,ytId});
+        });
+
+        if(!toAdd.length){
+          alert("No valid lines found. Use: Title | URL");
+          return;
+        }
+
+        Promise.all(
+          toAdd.map(v =>
+            db.collection("videos").add({
+              brand:v.brand,
+              model:v.model,
+              title:v.title,
+              ytId:v.ytId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+          )
+        ).then(()=>{
+          bulkInput.value = "";
+          alert("Bulk videos added!");
+        }).catch(err=>{
+          console.error(err);
+          alert("Bulk add failed: " + err.code);
         });
       };
 
