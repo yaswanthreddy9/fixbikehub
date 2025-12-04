@@ -62,7 +62,8 @@
     #userAuthBox{margin-bottom:16px;font-size:13px;padding:10px;border-radius:8px;background:#e5e7eb}
     #userAuthBox input{width:100%;margin-bottom:4px;padding:6px;border-radius:6px;border:1px solid #ccc;font-size:13px}
     #userAuthBox button{padding:6px 10px;border-radius:6px;border:none;background:#111827;color:#fff;font-size:12px;cursor:pointer}
-    #userStatus{margin-bottom:6px;font-weight:600}
+    #userStatus{margin-bottom:2px;font-weight:600}
+    #userLastUpdated{font-size:11px;color:#555;margin-bottom:6px}
 
     /* ---- ADMIN PANEL (SIDEBAR) ---- */
     #adminPanel{
@@ -159,6 +160,24 @@
       .search-box input{width:100%}
       .desktop-only{display:none}
       .mobile-only{display:inline-flex}
+
+      #userAuthBox{
+        padding:8px;
+        font-size:12px;
+      }
+      #userAuthBox input{
+        margin-bottom:3px;
+        font-size:12px;
+      }
+      #userAuthBox button{
+        font-size:11px;
+        padding:5px 8px;
+      }
+
+      /* hide big last-updated row; use compact one in auth box */
+      .top-meta .last-updated{
+        display:none;
+      }
     }
   </style>
 </head>
@@ -183,8 +202,6 @@
               <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
             </div>
           </div>
-          <!-- user icon on desktop -->
-          <button id="userIconBtn" class="header-btn" title="User">👤</button>
         </div>
 
         <!-- Mobile menu button -->
@@ -232,6 +249,7 @@
     <!-- User auth box -->
     <div id="userAuthBox">
       <div id="userStatus">Not logged in</div>
+      <div id="userLastUpdated" class="mobile-only"></div>
       <div id="authForms">
         <input id="authEmail" type="email" placeholder="Email">
         <input id="authPassword" type="password" placeholder="Password">
@@ -358,6 +376,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminPanel = document.getElementById("adminPanel");
       const logo = document.getElementById("logo");
       const lastUpdatedEl = document.getElementById("lastUpdated");
+      const userLastUpdated = document.getElementById("userLastUpdated");
 
       const menuBtn = document.getElementById("menuBtn");
       const sideMenu = document.getElementById("sideMenu");
@@ -371,7 +390,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminBackdrop = document.getElementById("adminBackdrop");
       const adminClose = document.getElementById("adminClose");
 
-      const userIconBtn = document.getElementById("userIconBtn");
       const sideUserStatus = document.getElementById("sideUserStatus");
 
       // User auth elements
@@ -471,11 +489,17 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       function updateLastUpdated(dateObj) {
         latestUpdated = dateObj;
         const t = translations[currentLang] || translations.en;
-        if (!dateObj) { lastUpdatedEl.textContent = ""; return; }
+        if (!dateObj) {
+          lastUpdatedEl.textContent = "";
+          if(userLastUpdated) userLastUpdated.textContent = "";
+          return;
+        }
         const d = dateObj;
         const pad = n => (n < 10 ? "0" + n : n);
         const str = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        lastUpdatedEl.textContent = `${t.lastUpdatedPrefix} ${str}`;
+        const text = `${t.lastUpdatedPrefix} ${str}`;
+        lastUpdatedEl.textContent = text;
+        if(userLastUpdated) userLastUpdated.textContent = text;
       }
 
       function applyLanguage() {
@@ -577,11 +601,9 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
 
       /* ---------- SAVE / LOAD LAST STATE ---------- */
       function saveLastState(){
-        // Always store locally as fallback
         localStorage.setItem("lastBrand", activeBrand);
         if(activeModel) localStorage.setItem("lastModel", activeModel);
 
-        // If user logged in, also store in Firestore
         if(currentUserUid){
           db.collection("userPrefs").doc(currentUserUid)
             .set({ lastBrand: activeBrand, lastModel: activeModel || null }, {merge:true})
@@ -593,12 +615,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         if(!models[brand]) return;
         activeBrand = brand;
 
-        // set brand button active
         document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
           btn.classList.toggle("active", btn.dataset.brand === brand);
         });
 
-        // load models with preferred model
         loadModels(model);
         render();
         saveLastState();
@@ -661,7 +681,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         saveLastState();
       }
 
-      // Initial brand/model from localStorage
       const storedBrand = localStorage.getItem("lastBrand");
       if (storedBrand && models[storedBrand]) {
         activeBrand = storedBrand;
@@ -701,20 +720,12 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       if(darkToggleMobile) darkToggleMobile.onclick = toggleTheme;
       applyTheme();
 
-      // Side menu open/close (theme/lang)
+      // Side menu open/close
       function openMenu(){ sideMenu.classList.add("open"); sideBackdrop.classList.add("show"); }
       function closeMenuFn(){ sideMenu.classList.remove("open"); sideBackdrop.classList.remove("show"); }
       menuBtn.onclick = openMenu;
       closeMenu.onclick = closeMenuFn;
       sideBackdrop.onclick = closeMenuFn;
-
-      // Desktop user icon scrolls to auth box
-      if (userIconBtn) {
-        userIconBtn.onclick = () => {
-          const box = document.getElementById("userAuthBox");
-          if (box) box.scrollIntoView({behavior:"smooth",block:"start"});
-        };
-      }
 
       // Admin selectors
       const bSel=document.getElementById("adminBrand");
@@ -749,7 +760,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       adminBackdrop.onclick = closeAdminPanel;
       adminClose.onclick = closeAdminPanel;
 
-      /* ---------- HIDDEN ADMIN LOGIN (click logo 5 times) ---------- */
+      /* ---------- HIDDEN ADMIN LOGIN (logo 5 clicks) + scroll to login ---------- */
       let logoClicks = 0;
       let logoTimer = null;
 
@@ -759,7 +770,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         document.body.classList.add("admin-ready");
         openAdminPanel();
         alert("Admin login success");
-        render(); // show edit/delete buttons
+        render();
       }
 
       function triggerAdminLogin(){
@@ -780,6 +791,11 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       }
 
       logo.onclick = () => {
+        // smooth scroll to login
+        const box = document.getElementById("userAuthBox");
+        if(box) box.scrollIntoView({behavior:"smooth",block:"start"});
+
+        // secret multi-click admin
         logoClicks++;
         if(logoClicks === 1){
           logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2000);
@@ -811,28 +827,25 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           userStatus.textContent = "Logged in as: " + email;
           sideUserStatus.textContent = "Logged in as: " + email;
 
-          // show only logout; hide inputs + signup/login
+          // desktop + mobile: hide inputs, show logout only
           emailInput.style.display   = "none";
           passInput.style.display    = "none";
           signupBtn.style.display    = "none";
           loginBtn.style.display     = "none";
           logoutUserBtn.style.display = "inline-block";
 
-          // load per-user last brand/model
           loadUserPrefs(currentUserUid);
         } else {
           currentUserUid = null;
           userStatus.textContent = "Not logged in";
           sideUserStatus.textContent = "Not logged in";
 
-          // show inputs + signup/login; hide logout
           emailInput.style.display   = "block";
           passInput.style.display    = "block";
           signupBtn.style.display    = "inline-block";
           loginBtn.style.display     = "inline-block";
           logoutUserBtn.style.display = "none";
 
-          // reset admin on any logout
           adminUnlocked = false;
           setAdminStatus();
           document.body.classList.remove("admin-ready","admin-open");
