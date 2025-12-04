@@ -40,7 +40,9 @@
 
     .video-grid{display:grid;gap:15px;margin-top:20px}
     .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+    .video-frame-wrapper{position:relative}
     iframe{width:100%;height:220px;border:none}
+    .fs-btn{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .video-info{padding:10px;font-size:14px;font-weight:600}
     .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:#555}
     .admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer}
@@ -48,8 +50,26 @@
     .delete-btn{background:#ef4444;color:white}
     #empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
 
-    /* ---- ADMIN PANEL ---- */
-    #adminPanel{display:none;background:#e5e7eb;padding:15px;border-radius:10px;margin-top:20px}
+    /* ---- ADMIN PANEL (SIDEBAR) ---- */
+    #adminPanel{
+      position:fixed;
+      top:0;
+      right:-360px;
+      width:320px;
+      max-width:90vw;
+      height:100vh;
+      overflow-y:auto;
+      background:#e5e7eb;
+      padding:15px;
+      box-shadow:-4px 0 12px rgba(0,0,0,.25);
+      z-index:50;
+      transition:right .25s ease;
+      display:none;
+    }
+    body.admin-ready #adminPanel{display:block;}
+    body.admin-open #adminPanel{right:0;}
+
+    #adminPanel h3{margin-top:4px}
     #adminPanel label{font-size:13px;font-weight:600;margin-top:8px;display:block}
     #adminPanel input,#adminPanel select{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:14px}
     #adminPanel textarea{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:13px;resize:vertical}
@@ -60,7 +80,37 @@
     #backupRow input{display:none}
     #logoutBtn{background:#ef4444;margin-left:auto}
 
-    /* ---- SIDE MENU (mobile) ---- */
+    #adminClose{background:none;border:none;font-size:18px;cursor:pointer;color:#111;margin-left:auto}
+
+    #adminBackdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:40;
+      display:none;
+    }
+    body.admin-open #adminBackdrop{display:block;}
+
+    #adminToggleBtn{
+      position:fixed;
+      bottom:16px;
+      right:16px;
+      z-index:45;
+      background:#111827;
+      color:#fff;
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      display:none;
+      align-items:center;
+      gap:6px;
+      box-shadow:0 4px 10px rgba(0,0,0,.4);
+      cursor:pointer;
+    }
+    body.admin-ready #adminToggleBtn{display:flex;}
+
+    /* ---- SIDE MENU (mobile for theme/lang) ---- */
     .side-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30;display:none}
     .side-backdrop.show{display:block}
     .side-menu{position:fixed;top:0;right:-260px;width:260px;height:100%;background:#111827;color:#fff;z-index:40;padding:16px;transition:right .25s ease;display:flex;flex-direction:column;gap:16px}
@@ -82,6 +132,9 @@
     body.dark .view-tab.active{background:#2563eb;border-color:#2563eb}
     body.dark .last-updated{color:#aaa}
     body.dark .lang-pill{background:#000;border-color:#999}
+    body.dark #adminPanel{background:#111827;color:#e5e7eb}
+    body.dark #adminPanel button{background:#16a34a}
+    body.dark #adminToggleBtn{background:#2563eb}
 
     /* --- MOBILE LAYOUT --- */
     @media(max-width:600px){
@@ -149,6 +202,10 @@
     </div>
   </div>
 
+  <!-- Admin sidebar + backdrop -->
+  <div id="adminBackdrop"></div>
+  <button id="adminToggleBtn"><span>🛠</span><span>Admin</span></button>
+
   <main>
     <div class="top-meta">
       <div class="view-tabs">
@@ -171,45 +228,53 @@
 
     <div id="empty" data-i18n="noVideos">No videos yet. Add videos using admin mode.</div>
     <div id="videos" class="video-grid"></div>
+  </main>
 
-    <div id="adminPanel">
-      <div id="adminNote">
-        <span data-i18n="adminStatusLabel">Admin status:</span>
-        <b id="adminStatus">Not logged in</b>
-      </div>
+  <!-- Admin Panel Sidebar -->
+  <div id="adminPanel">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
+      <button id="adminClose" title="Close">✕</button>
+    </div>
+    <div id="adminNote" style="margin-top:6px;">
+      <span data-i18n="adminStatusLabel">Admin status:</span>
+      <b id="adminStatus">Not logged in</b>
+    </div>
 
-      <h3 data-i18n="addVideoTitle">Add Video</h3>
+    <label data-i18n="brandLabel">Brand</label>
+    <select id="adminBrand"></select>
 
-      <label data-i18n="brandLabel">Brand</label>
-      <select id="adminBrand"></select>
+    <label data-i18n="modelLabel">Model</label>
+    <select id="adminModel"></select>
 
-      <label data-i18n="modelLabel">Model</label>
-      <select id="adminModel"></select>
+    <label data-i18n="videoTitleLabel">Video Title</label>
+    <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
 
-      <label data-i18n="videoTitleLabel">Video Title</label>
-      <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
+    <label data-i18n="youtubeLabel">YouTube URL or ID</label>
+    <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
 
-      <label data-i18n="youtubeLabel">YouTube URL or ID</label>
-      <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
+    <!-- New: auto title fetch -->
+    <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
+      🔍 Get Title from YouTube
+    </button>
 
-      <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
+    <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
 
-      <!-- Bulk add -->
-      <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
-      <textarea id="bulkInput" rows="4" placeholder="Example:
+    <!-- Bulk add -->
+    <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
+    <textarea id="bulkInput" rows="4" placeholder="Example:
 Pulsar 150 clutch | https://youtu.be/xxxx
 NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
-      <button id="bulkAddBtn" type="button">Add Bulk</button>
+    <button id="bulkAddBtn" type="button">Add Bulk</button>
 
-      <div id="backupRow">
-        <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
-        <label for="importInput" data-i18n="importBackup">Import Backup
-          <input id="importInput" type="file" accept="application/json" />
-        </label>
-        <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
-      </div>
+    <div id="backupRow">
+      <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
+      <label for="importInput" data-i18n="importBackup">Import Backup
+        <input id="importInput" type="file" accept="application/json" />
+      </label>
+      <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
     </div>
-  </main>
+  </div>
 
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -267,6 +332,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const darkToggle = document.getElementById("darkToggle");
       const darkToggleMobile = document.getElementById("darkToggleMobile");
 
+      const adminToggleBtn = document.getElementById("adminToggleBtn");
+      const adminBackdrop = document.getElementById("adminBackdrop");
+      const adminClose = document.getElementById("adminClose");
+
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
         en:{
@@ -303,7 +372,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           youtubeLabel:"YouTube URL या ID",
           addVideoButton:"वीडियो जोड़ें",
           exportBackup:"बैकअप एक्सपोर्ट",
-          importBackup:"बैकअप इम्पోర్ట",
+          importBackup:"बैकअप इम्पोर्ट",
           logout:"लॉगआउट",
           lastUpdatedPrefix:"आखिरी अपडेट:",
           viewByBike:"बाइक के अनुसार",
@@ -342,7 +411,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           videoTitleLabel:"வீடியோ தலைப்பு",
           youtubeLabel:"YouTube URL அல்லது ID",
           addVideoButton:"வீடியோ சேர்க்கவும்",
-          exportBackup:"காப்புப் பிரதி எக்ஸ్పோர்ட்",
+          exportBackup:"காப்புப் பிரதி எக்ஸ்போர்ட்",
           importBackup:"காப்புப் பிரதி இம்போர்ட்",
           logout:"லாக் அவுட்",
           lastUpdatedPrefix:"கடைசியாக புதுப்பிக்கப்பட்டது:",
@@ -445,7 +514,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
             </div>` : "";
 
           card.innerHTML=`
-            <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
+            <div class="video-frame-wrapper">
+              <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
+              <button class="fs-btn" title="Fullscreen" data-id="${v.id}">⤢</button>
+            </div>
             <div class="video-info">
               ${v.title}
               <div class="video-meta">
@@ -539,7 +611,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       if(darkToggleMobile) darkToggleMobile.onclick = toggleTheme;
       applyTheme();
 
-      // Side menu open/close
+      // Side menu open/close (theme/lang)
       function openMenu(){ sideMenu.classList.add("open"); sideBackdrop.classList.add("show"); }
       function closeMenuFn(){ sideMenu.classList.remove("open"); sideBackdrop.classList.remove("show"); }
       menuBtn.onclick = openMenu;
@@ -566,6 +638,19 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       };
       bSel.onchange();
 
+      /* ---------- ADMIN SIDEBAR TOGGLE ---------- */
+      function openAdminPanel(){
+        document.body.classList.add("admin-open");
+      }
+      function closeAdminPanel(){
+        document.body.classList.remove("admin-open");
+      }
+      adminToggleBtn.onclick = ()=>{
+        document.body.classList.toggle("admin-open");
+      };
+      adminBackdrop.onclick = closeAdminPanel;
+      adminClose.onclick = closeAdminPanel;
+
       /* ---------- HIDDEN ADMIN LOGIN (click logo 5 times) ---------- */
       let logoClicks = 0;
       let logoTimer = null;
@@ -573,7 +658,8 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       function unlockAdmin() {
         adminUnlocked = true;
         setAdminStatus();
-        adminPanel.style.display = "block";
+        document.body.classList.add("admin-ready");
+        openAdminPanel();
         alert("Admin login success");
         render(); // show edit/delete buttons
       }
@@ -614,7 +700,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         auth.signOut().finally(()=>{
           adminUnlocked = false;
           setAdminStatus();
-          adminPanel.style.display = "none";
+          document.body.classList.remove("admin-ready","admin-open");
           render();
         });
       };
@@ -648,6 +734,45 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           console.error(err);
           alert("Error saving video: " + err.code);
         });
+      };
+
+      /* ---------- AUTO TITLE FROM YOUTUBE (no billing, client-side) ---------- */
+      async function fetchYoutubeTitle(url) {
+        try {
+          if (!url) return null;
+          let full = url;
+          if (!/^https?:\/\//i.test(url)) {
+            full = "https://www.youtube.com/watch?v=" + url;
+          }
+          const oembedUrl = "https://www.youtube.com/oembed?format=json&url=" +
+                            encodeURIComponent(full);
+          const res = await fetch(oembedUrl);
+          if (!res.ok) return null;
+          const data = await res.json();
+          return data.title || null;
+        } catch (e) {
+          console.error("oEmbed error", e);
+          return null;
+        }
+      }
+
+      document.getElementById("fetchTitleBtn").onclick = async () => {
+        const urlInput = document.getElementById("adminUrl");
+        const titleInput = document.getElementById("adminTitle");
+        const url = urlInput.value.trim();
+        if (!url) {
+          alert("Paste YouTube URL or ID first.");
+          return;
+        }
+        const oldPlaceholder = titleInput.placeholder;
+        titleInput.placeholder = "Fetching title from YouTube...";
+        const title = await fetchYoutubeTitle(url);
+        titleInput.placeholder = oldPlaceholder;
+        if (title) {
+          titleInput.value = title;
+        } else {
+          alert("Could not fetch title. Please type it manually.");
+        }
       };
 
       /* ---------- BULK ADD (requires admin) ---------- */
@@ -700,10 +825,24 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         });
       };
 
-      /* ---------- EDIT / DELETE (admin only) ---------- */
+      /* ---------- FULLSCREEN BUTTON HANDLER ---------- */
       document.addEventListener("click", (e)=>{
+        // Fullscreen handler first
+        if(e.target.classList.contains("fs-btn")){
+          const wrapper = e.target.closest(".video-frame-wrapper");
+          if (!wrapper) return;
+          const requestFS = wrapper.requestFullscreen ||
+                            wrapper.webkitRequestFullscreen ||
+                            wrapper.msRequestFullscreen;
+          if (requestFS) {
+            requestFS.call(wrapper).catch(err=>console.log("FS error", err));
+          }
+          return;
+        }
+
         if(!adminUnlocked) return;
 
+        // EDIT / DELETE for admin
         if(e.target.classList.contains("edit-btn")){
           const id=e.target.dataset.id;
           const vid = videos.find(v=>v.id===id);
