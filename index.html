@@ -183,7 +183,7 @@
               <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
             </div>
           </div>
-          <!-- NEW: user icon on desktop -->
+          <!-- user icon on desktop -->
           <button id="userIconBtn" class="header-btn" title="User">👤</button>
         </div>
 
@@ -218,7 +218,6 @@
       </div>
     </div>
 
-    <!-- Optional user status in side menu -->
     <div class="side-section">
       <div class="side-section-title">User</div>
       <div id="sideUserStatus">Not logged in</div>
@@ -290,14 +289,12 @@
     <label data-i18n="youtubeLabel">YouTube URL or ID</label>
     <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
 
-    <!-- Auto title fetch -->
     <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
       🔍 Get Title from YouTube
     </button>
 
     <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
 
-    <!-- Bulk add -->
     <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
     <textarea id="bulkInput" rows="4" placeholder="Example:
 Pulsar 150 clutch | https://youtu.be/xxxx
@@ -349,6 +346,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       let activeBrand = "hero";
       let activeModel = null;
       let adminUnlocked = false;
+      let currentUserUid = null;
       let videos = []; // {id, brand, model, title, ytId, createdAtMs}
       let latestUpdated = null;
       let viewMode = "bike"; // "bike" or "all"
@@ -383,7 +381,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const signupBtn  = document.getElementById("signupBtn");
       const loginBtn   = document.getElementById("loginBtn");
       const logoutUserBtn = document.getElementById("logoutUserBtn");
-      const authForms = document.getElementById("authForms");
 
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
@@ -413,7 +410,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           chooseBrand:"1. ब्रांड चुनें",
           chooseModel:"2. मॉडल चुनें",
           noVideos:"कोई वीडियो नहीं। एडमिन से वीडियो जोड़ें।",
-          adminStatusLabel:"एडमిన स्थिति:",
+          adminStatusLabel:"एडमिन स्थिति:",
           addVideoTitle:"वीडियो जोड़ें",
           brandLabel:"ब्रांड",
           modelLabel:"मॉडल",
@@ -578,6 +575,50 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         empty.style.display = videoGrid.children.length===0 ? "block" : "none";
       }
 
+      /* ---------- SAVE / LOAD LAST STATE ---------- */
+      function saveLastState(){
+        // Always store locally as fallback
+        localStorage.setItem("lastBrand", activeBrand);
+        if(activeModel) localStorage.setItem("lastModel", activeModel);
+
+        // If user logged in, also store in Firestore
+        if(currentUserUid){
+          db.collection("userPrefs").doc(currentUserUid)
+            .set({ lastBrand: activeBrand, lastModel: activeModel || null }, {merge:true})
+            .catch(err=>console.log("userPrefs save error", err));
+        }
+      }
+
+      function setBrandAndModel(brand, model){
+        if(!models[brand]) return;
+        activeBrand = brand;
+
+        // set brand button active
+        document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
+          btn.classList.toggle("active", btn.dataset.brand === brand);
+        });
+
+        // load models with preferred model
+        loadModels(model);
+        render();
+        saveLastState();
+      }
+
+      function loadUserPrefs(uid){
+        db.collection("userPrefs").doc(uid).get()
+          .then(doc=>{
+            if(doc.exists){
+              const d = doc.data();
+              const brand = d.lastBrand;
+              const model = d.lastModel;
+              if(brand && models[brand]){
+                setBrandAndModel(brand, model || null);
+              }
+            }
+          })
+          .catch(err=>console.log("userPrefs load error", err));
+      }
+
       /* ---------- VIEW TABS ---------- */
       document.querySelectorAll(".view-tab").forEach(tab=>{
         tab.addEventListener("click", ()=>{
@@ -589,14 +630,18 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       });
 
       /* ---------- MODELS & BRAND ---------- */
-      function loadModels(){
+      function loadModels(preferredModel){
         const modelArea=document.getElementById("modelButtons");
         modelArea.innerHTML="";
         const allModels = models[activeBrand] || [];
 
         const storedModel = localStorage.getItem("lastModel");
         let initialModel = allModels[0];
-        if(storedModel && allModels.includes(storedModel)) initialModel = storedModel;
+        if(preferredModel && allModels.includes(preferredModel)){
+          initialModel = preferredModel;
+        }else if(storedModel && allModels.includes(storedModel)){
+          initialModel = storedModel;
+        }
 
         allModels.forEach((m)=>{
           const b=document.createElement("button");
@@ -607,19 +652,21 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
             document.querySelectorAll("#modelButtons .filter-btn").forEach(x=>x.classList.remove("active"));
             b.classList.add("active");
             activeModel=m;
-            localStorage.setItem("lastModel", activeModel);
+            saveLastState();
             render();
           };
           modelArea.appendChild(b);
           if(isActive) activeModel = m;
         });
+        saveLastState();
       }
 
-      // restore last brand/model
+      // Initial brand/model from localStorage
       const storedBrand = localStorage.getItem("lastBrand");
       if (storedBrand && models[storedBrand]) {
         activeBrand = storedBrand;
       }
+      loadModels(null);
 
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
       brandButtons.forEach(btn=>{
@@ -628,13 +675,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           brandButtons.forEach(x=>x.classList.remove("active"));
           btn.classList.add("active");
           activeBrand=btn.dataset.brand;
-          localStorage.setItem("lastBrand", activeBrand);
-          loadModels();
+          loadModels(null);
           render();
         });
       });
-
-      loadModels();
 
       // Search
       search.oninput=render;
@@ -762,16 +806,32 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       /* ---------- NORMAL USER AUTH (email/password) ---------- */
       auth.onAuthStateChanged((user) => {
         if (user) {
+          currentUserUid = user.uid;
           const email = user.email || "User";
           userStatus.textContent = "Logged in as: " + email;
           sideUserStatus.textContent = "Logged in as: " + email;
-          logoutUserBtn.style.display = "none";   // hide buttons
-          authForms.style.display = "none";       // hide form after login
+
+          // show only logout; hide inputs + signup/login
+          emailInput.style.display   = "none";
+          passInput.style.display    = "none";
+          signupBtn.style.display    = "none";
+          loginBtn.style.display     = "none";
+          logoutUserBtn.style.display = "inline-block";
+
+          // load per-user last brand/model
+          loadUserPrefs(currentUserUid);
         } else {
+          currentUserUid = null;
           userStatus.textContent = "Not logged in";
           sideUserStatus.textContent = "Not logged in";
+
+          // show inputs + signup/login; hide logout
+          emailInput.style.display   = "block";
+          passInput.style.display    = "block";
+          signupBtn.style.display    = "inline-block";
+          loginBtn.style.display     = "inline-block";
           logoutUserBtn.style.display = "none";
-          authForms.style.display = "block";      // show form when logged out
+
           // reset admin on any logout
           adminUnlocked = false;
           setAdminStatus();
@@ -811,7 +871,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           });
       };
 
-      // optional: manual logout button (kept but hidden normally)
       logoutUserBtn.onclick = () => {
         auth.signOut().catch(err => {
           console.error(err);
@@ -850,7 +909,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         });
       };
 
-      /* ---------- AUTO TITLE FROM YOUTUBE (no billing, client-side) ---------- */
+      /* ---------- AUTO TITLE FROM YOUTUBE ---------- */
       async function fetchYoutubeTitle(url) {
         try {
           if (!url) return null;
@@ -1108,6 +1167,13 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         const swUrl = URL.createObjectURL(swBlob);
         navigator.serviceWorker.register(swUrl).catch(err => console.log("SW error", err));
       }
+
+      // remove initial focus glow
+      setTimeout(() => {
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      }, 50);
 
       // init text / status
       setAdminStatus();
