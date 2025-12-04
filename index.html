@@ -256,7 +256,7 @@
           <button class="lang-pill lang-pill-mobile" data-lang="en">English</button>
           <button class="lang-pill lang-pill-mobile" data-lang="hi">हिन्दी</button>
           <button class="lang-pill lang-pill-mobile" data-lang="te">తెలుగు</button>
-          <button class="lang-pill lang-pill-mobile" data-lang="ta">தமிழ்</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="ta">தமிழ్</button>
         </div>
       </div>
     </div>
@@ -732,9 +732,20 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       // Search
       search.oninput=render;
 
-      // Logo scrolls to top (no auth UI)
+      // Logo scroll + SECRET ADMIN (5 clicks)
+      let logoClicks = 0;
+      let logoTimer = null;
       logo.onclick = () => {
         window.scrollTo({top:0,behavior:"smooth"});
+        logoClicks++;
+        if(logoClicks === 1){
+          logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2000);
+        }
+        if(logoClicks >= 5){
+          logoClicks = 0;
+          clearTimeout(logoTimer);
+          triggerAdminLogin();
+        }
       };
 
       // Dark mode toggle shared
@@ -805,7 +816,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       loginBackdrop.onclick = closeLoginModal;
       modalClose.onclick = closeLoginModal;
 
-      /* ---------- HIDDEN ADMIN LOGIN via USER ICON ---------- */
+      // User icon opens login modal ONLY
+      userIconBtn.onclick = openLoginModal;
+
+      /* ---------- ADMIN LOGIN (Google, from logo) ---------- */
       function unlockAdmin() {
         adminUnlocked = true;
         setAdminStatus();
@@ -831,21 +845,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
             alert("Google login failed: " + err.code);
           });
       }
-
-      let userIconClicks = 0;
-      let userIconTimer = null;
-      userIconBtn.onclick = () => {
-        openLoginModal();
-        userIconClicks++;
-        if(userIconClicks === 1){
-          userIconTimer = setTimeout(()=>{ userIconClicks = 0; }, 2000);
-        }
-        if(userIconClicks >= 5){
-          userIconClicks = 0;
-          clearTimeout(userIconTimer);
-          triggerAdminLogin();
-        }
-      };
 
       // Admin logout in panel
       document.getElementById("logoutBtn").onclick = () => {
@@ -929,7 +928,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       /* ---------- ADD VIDEO (requires admin) ---------- */
       document.getElementById("addVideoBtn").onclick=()=>{
         if(!adminUnlocked){
-          alert("Login as admin first (tap user icon 5 times).");
+          alert("Login as admin first (click logo 5 times).");
           return;
         }
         const brand=bSel.value;
