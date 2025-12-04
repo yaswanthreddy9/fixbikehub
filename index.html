@@ -40,15 +40,19 @@
 
     .video-grid{display:grid;gap:15px;margin-top:20px}
     .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
-    .video-frame-wrapper{position:relative}
     iframe{width:100%;height:220px;border:none}
-    .fs-btn{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .video-info{padding:10px;font-size:14px;font-weight:600}
     .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:#555}
     .admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer}
     .edit-btn{background:#f59e0b;color:white}
     .delete-btn{background:#ef4444;color:white}
     #empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
+
+    /* ---- USER AUTH ---- */
+    #userAuthBox{margin-bottom:16px;font-size:13px;padding:10px;border-radius:8px;background:#e5e7eb}
+    #userAuthBox input{width:100%;margin-bottom:4px;padding:6px;border-radius:6px;border:1px solid #ccc;font-size:13px}
+    #userAuthBox button{padding:6px 10px;border-radius:6px;border:none;background:#111827;color:#fff;font-size:12px;cursor:pointer}
+    #userStatus{margin-bottom:6px;font-weight:600}
 
     /* ---- ADMIN PANEL (SIDEBAR) ---- */
     #adminPanel{
@@ -79,7 +83,6 @@
     #backupRow button,#backupRow label{background:#0ea5e9;color:white;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:bold;cursor:pointer}
     #backupRow input{display:none}
     #logoutBtn{background:#ef4444;margin-left:auto}
-
     #adminClose{background:none;border:none;font-size:18px;cursor:pointer;color:#111;margin-left:auto}
 
     #adminBackdrop{
@@ -135,6 +138,8 @@
     body.dark #adminPanel{background:#111827;color:#e5e7eb}
     body.dark #adminPanel button{background:#16a34a}
     body.dark #adminToggleBtn{background:#2563eb}
+    body.dark #userAuthBox{background:#1f2933}
+    body.dark #userAuthBox input{background:#111;border-color:#444;color:#fff}
 
     /* --- MOBILE LAYOUT --- */
     @media(max-width:600px){
@@ -207,6 +212,20 @@
   <button id="adminToggleBtn"><span>🛠</span><span>Admin</span></button>
 
   <main>
+    <!-- User auth box -->
+    <div id="userAuthBox">
+      <div id="userStatus">Not logged in</div>
+      <div id="authForms">
+        <input id="authEmail" type="email" placeholder="Email">
+        <input id="authPassword" type="password" placeholder="Password">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+          <button id="signupBtn">Sign up</button>
+          <button id="loginBtn">Login</button>
+          <button id="logoutUserBtn" style="display:none;">Logout</button>
+        </div>
+      </div>
+    </div>
+
     <div class="top-meta">
       <div class="view-tabs">
         <button class="view-tab active" data-view="bike" id="tabByBike">By Bike</button>
@@ -253,7 +272,7 @@
     <label data-i18n="youtubeLabel">YouTube URL or ID</label>
     <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
 
-    <!-- New: auto title fetch -->
+    <!-- Auto title fetch -->
     <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
       🔍 Get Title from YouTube
     </button>
@@ -335,6 +354,14 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminToggleBtn = document.getElementById("adminToggleBtn");
       const adminBackdrop = document.getElementById("adminBackdrop");
       const adminClose = document.getElementById("adminClose");
+
+      // User auth elements
+      const userStatus = document.getElementById("userStatus");
+      const emailInput = document.getElementById("authEmail");
+      const passInput  = document.getElementById("authPassword");
+      const signupBtn  = document.getElementById("signupBtn");
+      const loginBtn   = document.getElementById("loginBtn");
+      const logoutUserBtn = document.getElementById("logoutUserBtn");
 
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
@@ -473,7 +500,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       /* ------------ HELPERS ------------ */
       function setAdminStatus() {
         adminStatus.textContent = adminUnlocked ? "Logged in" : "Not logged in";
-        adminStatus.style.color = adminUnlocked ? "green" : "red";
+        adminStatus.style.color = adminUnlocked ? "lightgreen" : "red";
       }
 
       function extractId(url){
@@ -514,10 +541,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
             </div>` : "";
 
           card.innerHTML=`
-            <div class="video-frame-wrapper">
-              <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
-              <button class="fs-btn" title="Fullscreen" data-id="${v.id}">⤢</button>
-            </div>
+            <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
             <div class="video-info">
               ${v.title}
               <div class="video-meta">
@@ -693,7 +717,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         }
       };
 
-      // Logout
+      // Logout (admin button in panel)
       document.getElementById("logoutBtn").onclick = () => {
         if (!adminUnlocked) return;
         if (!confirm("Log out admin?")) return;
@@ -702,6 +726,60 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           setAdminStatus();
           document.body.classList.remove("admin-ready","admin-open");
           render();
+        });
+      };
+
+      /* ---------- NORMAL USER AUTH (email/password) ---------- */
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          userStatus.textContent = "Logged in as: " + (user.email || "User");
+          logoutUserBtn.style.display = "inline-block";
+        } else {
+          userStatus.textContent = "Not logged in";
+          logoutUserBtn.style.display = "none";
+          // reset admin on any logout
+          adminUnlocked = false;
+          setAdminStatus();
+          document.body.classList.remove("admin-ready","admin-open");
+          render();
+        }
+      });
+
+      signupBtn.onclick = () => {
+        const email = emailInput.value.trim();
+        const pass  = passInput.value.trim();
+        if (!email || !pass) {
+          alert("Enter email & password");
+          return;
+        }
+        auth.createUserWithEmailAndPassword(email, pass)
+          .then(() => {
+            alert("Account created & logged in!");
+          })
+          .catch(err => {
+            console.error(err);
+            alert("Sign up error: " + err.message);
+          });
+      };
+
+      loginBtn.onclick = () => {
+        const email = emailInput.value.trim();
+        const pass  = passInput.value.trim();
+        if (!email || !pass) {
+          alert("Enter email & password");
+          return;
+        }
+        auth.signInWithEmailAndPassword(email, pass)
+          .catch(err => {
+            console.error(err);
+            alert("Login error: " + err.message);
+          });
+      };
+
+      logoutUserBtn.onclick = () => {
+        auth.signOut().catch(err => {
+          console.error(err);
+          alert("Logout error: " + err.message);
         });
       };
 
@@ -825,24 +903,10 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         });
       };
 
-      /* ---------- FULLSCREEN BUTTON HANDLER ---------- */
+      /* ---------- EDIT / DELETE (admin only) ---------- */
       document.addEventListener("click", (e)=>{
-        // Fullscreen handler first
-        if(e.target.classList.contains("fs-btn")){
-          const wrapper = e.target.closest(".video-frame-wrapper");
-          if (!wrapper) return;
-          const requestFS = wrapper.requestFullscreen ||
-                            wrapper.webkitRequestFullscreen ||
-                            wrapper.msRequestFullscreen;
-          if (requestFS) {
-            requestFS.call(wrapper).catch(err=>console.log("FS error", err));
-          }
-          return;
-        }
-
         if(!adminUnlocked) return;
 
-        // EDIT / DELETE for admin
         if(e.target.classList.contains("edit-btn")){
           const id=e.target.dataset.id;
           const vid = videos.find(v=>v.id===id);
@@ -931,7 +995,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
               });
               return batchAdd.commit();
             }).then(()=>{
-              alert("Backup imported successfully.");
+              alert("Backup imported successfully!");
             }).catch(err=>{
               console.error(err);
               alert("Import failed: " + err.code);
