@@ -9,6 +9,16 @@
     /* ---- BASE STYLES ---- */
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
     body{background:#f4f4f4;color:#222}
+
+    /* remove blue focus highlight */
+    button:focus,
+    input:focus,
+    select:focus,
+    textarea:focus{
+      outline:none;
+      box-shadow:none;
+    }
+
     header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
     .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
     .logo{font-size:20px;font-weight:700;cursor:pointer}
@@ -173,6 +183,8 @@
               <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
             </div>
           </div>
+          <!-- NEW: user icon on desktop -->
+          <button id="userIconBtn" class="header-btn" title="User">👤</button>
         </div>
 
         <!-- Mobile menu button -->
@@ -204,6 +216,12 @@
           <button class="lang-pill lang-pill-mobile" data-lang="ta">தமிழ்</button>
         </div>
       </div>
+    </div>
+
+    <!-- Optional user status in side menu -->
+    <div class="side-section">
+      <div class="side-section-title">User</div>
+      <div id="sideUserStatus">Not logged in</div>
     </div>
   </div>
 
@@ -355,6 +373,9 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminBackdrop = document.getElementById("adminBackdrop");
       const adminClose = document.getElementById("adminClose");
 
+      const userIconBtn = document.getElementById("userIconBtn");
+      const sideUserStatus = document.getElementById("sideUserStatus");
+
       // User auth elements
       const userStatus = document.getElementById("userStatus");
       const emailInput = document.getElementById("authEmail");
@@ -362,6 +383,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const signupBtn  = document.getElementById("signupBtn");
       const loginBtn   = document.getElementById("loginBtn");
       const logoutUserBtn = document.getElementById("logoutUserBtn");
+      const authForms = document.getElementById("authForms");
 
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
@@ -391,7 +413,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           chooseBrand:"1. ब्रांड चुनें",
           chooseModel:"2. मॉडल चुनें",
           noVideos:"कोई वीडियो नहीं। एडमिन से वीडियो जोड़ें।",
-          adminStatusLabel:"एडमिन स्थिति:",
+          adminStatusLabel:"एडमిన स्थिति:",
           addVideoTitle:"वीडियो जोड़ें",
           brandLabel:"ब्रांड",
           modelLabel:"मॉडल",
@@ -642,6 +664,14 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       closeMenu.onclick = closeMenuFn;
       sideBackdrop.onclick = closeMenuFn;
 
+      // Desktop user icon scrolls to auth box
+      if (userIconBtn) {
+        userIconBtn.onclick = () => {
+          const box = document.getElementById("userAuthBox");
+          if (box) box.scrollIntoView({behavior:"smooth",block:"start"});
+        };
+      }
+
       // Admin selectors
       const bSel=document.getElementById("adminBrand");
       const mSel=document.getElementById("adminModel");
@@ -732,11 +762,16 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       /* ---------- NORMAL USER AUTH (email/password) ---------- */
       auth.onAuthStateChanged((user) => {
         if (user) {
-          userStatus.textContent = "Logged in as: " + (user.email || "User");
-          logoutUserBtn.style.display = "inline-block";
+          const email = user.email || "User";
+          userStatus.textContent = "Logged in as: " + email;
+          sideUserStatus.textContent = "Logged in as: " + email;
+          logoutUserBtn.style.display = "none";   // hide buttons
+          authForms.style.display = "none";       // hide form after login
         } else {
           userStatus.textContent = "Not logged in";
+          sideUserStatus.textContent = "Not logged in";
           logoutUserBtn.style.display = "none";
+          authForms.style.display = "block";      // show form when logged out
           // reset admin on any logout
           adminUnlocked = false;
           setAdminStatus();
@@ -776,6 +811,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           });
       };
 
+      // optional: manual logout button (kept but hidden normally)
       logoutUserBtn.onclick = () => {
         auth.signOut().catch(err => {
           console.error(err);
