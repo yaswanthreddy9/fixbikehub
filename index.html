@@ -10,7 +10,6 @@
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
     body{background:#f4f4f4;color:#222}
 
-    /* remove blue focus highlight */
     button:focus,
     input:focus,
     select:focus,
@@ -36,6 +35,17 @@
     .lang-pill.active{border-color:#facc15;opacity:1;animation:langBlink 1.5s infinite}
     @keyframes langBlink{0%,100%{box-shadow:0 0 0px #facc15}50%{box-shadow:0 0 8px #facc15}}
 
+    .user-box{display:flex;flex-direction:column;align-items:center;gap:2px;margin-left:4px}
+    .logout-text{
+      border:none;
+      background:none;
+      color:#e5e7eb;
+      font-size:11px;
+      cursor:pointer;
+      padding:0;
+      display:none;
+    }
+
     main{max-width:1100px;margin:auto;padding:16px}
     .filters-title{font-size:14px;margin:10px 0;color:#444;font-weight:600}
     .buttons{display:flex;flex-wrap:wrap;gap:8px}
@@ -57,13 +67,6 @@
     .edit-btn{background:#f59e0b;color:white}
     .delete-btn{background:#ef4444;color:white}
     #empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
-
-    /* ---- USER AUTH ---- */
-    #userAuthBox{margin-bottom:16px;font-size:13px;padding:10px;border-radius:8px;background:#e5e7eb}
-    #userAuthBox input{width:100%;margin-bottom:4px;padding:6px;border-radius:6px;border:1px solid #ccc;font-size:13px}
-    #userAuthBox button{padding:6px 10px;border-radius:6px;border:none;background:#111827;color:#fff;font-size:12px;cursor:pointer}
-    #userStatus{margin-bottom:2px;font-weight:600}
-    #userLastUpdated{font-size:11px;color:#555;margin-bottom:6px}
 
     /* ---- ADMIN PANEL (SIDEBAR) ---- */
     #adminPanel{
@@ -124,7 +127,7 @@
     }
     body.admin-ready #adminToggleBtn{display:flex;}
 
-    /* ---- SIDE MENU (mobile for theme/lang) ---- */
+    /* ---- SIDE MENU (MOBILE) ---- */
     .side-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30;display:none}
     .side-backdrop.show{display:block}
     .side-menu{position:fixed;top:0;right:-260px;width:260px;height:100%;background:#111827;color:#fff;z-index:40;padding:16px;transition:right .25s ease;display:flex;flex-direction:column;gap:16px}
@@ -133,6 +136,43 @@
     .close-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
     .side-section{font-size:13px}
     .side-section-title{font-size:12px;margin-bottom:4px;color:#e5e7eb}
+    .side-user-action{margin-top:4px;font-size:12px;color:#e5e7eb;text-decoration:underline;cursor:pointer}
+
+    /* ---- LOGIN MODAL ---- */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:60;
+      display:none;
+    }
+    .modal{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%) scale(.9);
+      opacity:0;
+      transition:opacity .18s ease,transform .18s ease;
+      z-index:61;
+      background:#f9fafb;
+      padding:16px 18px;
+      border-radius:12px;
+      max-width:320px;
+      width:90%;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      display:none;
+    }
+    .modal.show{
+      display:block;
+      opacity:1;
+      transform:translate(-50%,-50%) scale(1);
+    }
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .modal-header h3{margin:0;font-size:16px}
+    .modal-close{background:none;border:none;font-size:20px;cursor:pointer}
+    .modal input{width:100%;margin-top:6px;padding:7px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+    .modal-buttons{display:flex;gap:8px;margin-top:10px}
+    .modal-buttons button{flex:1;padding:7px;border-radius:6px;border:none;background:#111827;color:#fff;font-size:13px;cursor:pointer}
 
     /* ---- DARK MODE ---- */
     body.dark{background:#0f0f0f;color:white}
@@ -149,8 +189,7 @@
     body.dark #adminPanel{background:#111827;color:#e5e7eb}
     body.dark #adminPanel button{background:#16a34a}
     body.dark #adminToggleBtn{background:#2563eb}
-    body.dark #userAuthBox{background:#1f2933}
-    body.dark #userAuthBox input{background:#111;border-color:#444;color:#fff}
+    body.dark .modal{background:#111827;color:#f9fafb}
 
     /* --- MOBILE LAYOUT --- */
     @media(max-width:600px){
@@ -160,24 +199,6 @@
       .search-box input{width:100%}
       .desktop-only{display:none}
       .mobile-only{display:inline-flex}
-
-      #userAuthBox{
-        padding:8px;
-        font-size:12px;
-      }
-      #userAuthBox input{
-        margin-bottom:3px;
-        font-size:12px;
-      }
-      #userAuthBox button{
-        font-size:11px;
-        padding:5px 8px;
-      }
-
-      /* hide big last-updated row; use compact one in auth box */
-      .top-meta .last-updated{
-        display:none;
-      }
     }
   </style>
 </head>
@@ -202,6 +223,11 @@
               <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
             </div>
           </div>
+          <div style="width:8px;"></div>
+          <div class="user-box">
+            <button id="userIconBtn" class="header-btn" title="User">👤</button>
+            <button id="logoutTextBtn" class="logout-text">logout?</button>
+          </div>
         </div>
 
         <!-- Mobile menu button -->
@@ -214,7 +240,7 @@
   <div id="sideBackdrop" class="side-backdrop"></div>
   <div id="sideMenu" class="side-menu">
     <div class="side-header">
-      <span id="sideTitle">Menu</span>
+      <span id="sideTitle">BikeFix Hub Menu</span>
       <button id="closeMenu" class="close-btn">✕</button>
     </div>
 
@@ -238,6 +264,7 @@
     <div class="side-section">
       <div class="side-section-title">User</div>
       <div id="sideUserStatus">Not logged in</div>
+      <div id="sideUserAction" class="side-user-action">Login?</div>
     </div>
   </div>
 
@@ -245,22 +272,25 @@
   <div id="adminBackdrop"></div>
   <button id="adminToggleBtn"><span>🛠</span><span>Admin</span></button>
 
-  <main>
-    <!-- User auth box -->
-    <div id="userAuthBox">
-      <div id="userStatus">Not logged in</div>
-      <div id="userLastUpdated" class="mobile-only"></div>
-      <div id="authForms">
-        <input id="authEmail" type="email" placeholder="Email">
-        <input id="authPassword" type="password" placeholder="Password">
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
-          <button id="signupBtn">Sign up</button>
-          <button id="loginBtn">Login</button>
-          <button id="logoutUserBtn" style="display:none;">Logout</button>
-        </div>
-      </div>
+  <!-- Login modal -->
+  <div id="loginBackdrop" class="modal-backdrop"></div>
+  <div id="loginModal" class="modal">
+    <div class="modal-header">
+      <h3>Login / Sign up</h3>
+      <button id="modalClose" class="modal-close">✕</button>
     </div>
+    <p style="font-size:12px;margin-bottom:4px;color:#6b7280;">
+      Use your email and password to sign up once, then login anytime.
+    </p>
+    <input id="modalEmail" type="email" placeholder="Email" />
+    <input id="modalPassword" type="password" placeholder="Password" />
+    <div class="modal-buttons">
+      <button id="modalSignupBtn">Sign up</button>
+      <button id="modalLoginBtn">Login</button>
+    </div>
+  </div>
 
+  <main>
     <div class="top-meta">
       <div class="view-tabs">
         <button class="view-tab active" data-view="bike" id="tabByBike">By Bike</button>
@@ -365,9 +395,9 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       let activeModel = null;
       let adminUnlocked = false;
       let currentUserUid = null;
-      let videos = []; // {id, brand, model, title, ytId, createdAtMs}
+      let videos = [];
       let latestUpdated = null;
-      let viewMode = "bike"; // "bike" or "all"
+      let viewMode = "bike";
 
       const search = document.getElementById("searchInput");
       const videoGrid = document.getElementById("videos");
@@ -376,7 +406,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminPanel = document.getElementById("adminPanel");
       const logo = document.getElementById("logo");
       const lastUpdatedEl = document.getElementById("lastUpdated");
-      const userLastUpdated = document.getElementById("userLastUpdated");
 
       const menuBtn = document.getElementById("menuBtn");
       const sideMenu = document.getElementById("sideMenu");
@@ -391,14 +420,18 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const adminClose = document.getElementById("adminClose");
 
       const sideUserStatus = document.getElementById("sideUserStatus");
+      const sideUserAction = document.getElementById("sideUserAction");
 
-      // User auth elements
-      const userStatus = document.getElementById("userStatus");
-      const emailInput = document.getElementById("authEmail");
-      const passInput  = document.getElementById("authPassword");
-      const signupBtn  = document.getElementById("signupBtn");
-      const loginBtn   = document.getElementById("loginBtn");
-      const logoutUserBtn = document.getElementById("logoutUserBtn");
+      const userIconBtn = document.getElementById("userIconBtn");
+      const logoutTextBtn = document.getElementById("logoutTextBtn");
+
+      const loginBackdrop = document.getElementById("loginBackdrop");
+      const loginModal = document.getElementById("loginModal");
+      const modalClose = document.getElementById("modalClose");
+      const modalEmail = document.getElementById("modalEmail");
+      const modalPassword = document.getElementById("modalPassword");
+      const modalSignupBtn = document.getElementById("modalSignupBtn");
+      const modalLoginBtn = document.getElementById("modalLoginBtn");
 
       /* ------------ LANGUAGE SYSTEM ------------ */
       const translations = {
@@ -491,20 +524,17 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         const t = translations[currentLang] || translations.en;
         if (!dateObj) {
           lastUpdatedEl.textContent = "";
-          if(userLastUpdated) userLastUpdated.textContent = "";
           return;
         }
         const d = dateObj;
         const pad = n => (n < 10 ? "0" + n : n);
         const str = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        const text = `${t.lastUpdatedPrefix} ${str}`;
-        lastUpdatedEl.textContent = text;
-        if(userLastUpdated) userLastUpdated.textContent = text;
+        lastUpdatedEl.textContent = `${t.lastUpdatedPrefix} ${str}`;
       }
 
       function applyLanguage() {
         const t = translations[currentLang] || translations.en;
-        document.getElementById("logo").textContent = t.title;
+        logo.textContent = t.title;
         document.getElementById("sideTitle").textContent = t.title + " Menu";
         search.placeholder = t.search;
         document.querySelector('[data-i18n="chooseBrand"]').textContent = t.chooseBrand;
@@ -702,6 +732,11 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       // Search
       search.oninput=render;
 
+      // Logo scrolls to top (no auth UI)
+      logo.onclick = () => {
+        window.scrollTo({top:0,behavior:"smooth"});
+      };
+
       // Dark mode toggle shared
       function applyTheme(){
         const mode=localStorage.getItem("theme");
@@ -748,22 +783,29 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       bSel.onchange();
 
       /* ---------- ADMIN SIDEBAR TOGGLE ---------- */
-      function openAdminPanel(){
-        document.body.classList.add("admin-open");
-      }
-      function closeAdminPanel(){
-        document.body.classList.remove("admin-open");
-      }
-      adminToggleBtn.onclick = ()=>{
-        document.body.classList.toggle("admin-open");
-      };
+      function openAdminPanel(){ document.body.classList.add("admin-open"); }
+      function closeAdminPanel(){ document.body.classList.remove("admin-open"); }
+      adminToggleBtn.onclick = ()=>{ document.body.classList.toggle("admin-open"); };
       adminBackdrop.onclick = closeAdminPanel;
       adminClose.onclick = closeAdminPanel;
 
-      /* ---------- HIDDEN ADMIN LOGIN (logo 5 clicks) + scroll to login ---------- */
-      let logoClicks = 0;
-      let logoTimer = null;
+      /* ---------- LOGIN MODAL HELPERS ---------- */
+      function openLoginModal(){
+        loginBackdrop.style.display = "block";
+        loginModal.style.display = "block";
+        requestAnimationFrame(()=>loginModal.classList.add("show"));
+      }
+      function closeLoginModal(){
+        loginModal.classList.remove("show");
+        setTimeout(()=>{
+          loginModal.style.display = "none";
+          loginBackdrop.style.display = "none";
+        },150);
+      }
+      loginBackdrop.onclick = closeLoginModal;
+      modalClose.onclick = closeLoginModal;
 
+      /* ---------- HIDDEN ADMIN LOGIN via USER ICON ---------- */
       function unlockAdmin() {
         adminUnlocked = true;
         setAdminStatus();
@@ -790,27 +832,25 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           });
       }
 
-      logo.onclick = () => {
-        // smooth scroll to login
-        const box = document.getElementById("userAuthBox");
-        if(box) box.scrollIntoView({behavior:"smooth",block:"start"});
-
-        // secret multi-click admin
-        logoClicks++;
-        if(logoClicks === 1){
-          logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2000);
+      let userIconClicks = 0;
+      let userIconTimer = null;
+      userIconBtn.onclick = () => {
+        openLoginModal();
+        userIconClicks++;
+        if(userIconClicks === 1){
+          userIconTimer = setTimeout(()=>{ userIconClicks = 0; }, 2000);
         }
-        if(logoClicks >= 5){
-          logoClicks = 0;
-          clearTimeout(logoTimer);
+        if(userIconClicks >= 5){
+          userIconClicks = 0;
+          clearTimeout(userIconTimer);
           triggerAdminLogin();
         }
       };
 
-      // Logout (admin button in panel)
+      // Admin logout in panel
       document.getElementById("logoutBtn").onclick = () => {
         if (!adminUnlocked) return;
-        if (!confirm("Log out admin?")) return;
+        if (!confirm("Log out admin (and user)?")) return;
         auth.signOut().finally(()=>{
           adminUnlocked = false;
           setAdminStatus();
@@ -820,42 +860,9 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       };
 
       /* ---------- NORMAL USER AUTH (email/password) ---------- */
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          currentUserUid = user.uid;
-          const email = user.email || "User";
-          userStatus.textContent = "Logged in as: " + email;
-          sideUserStatus.textContent = "Logged in as: " + email;
-
-          // desktop + mobile: hide inputs, show logout only
-          emailInput.style.display   = "none";
-          passInput.style.display    = "none";
-          signupBtn.style.display    = "none";
-          loginBtn.style.display     = "none";
-          logoutUserBtn.style.display = "inline-block";
-
-          loadUserPrefs(currentUserUid);
-        } else {
-          currentUserUid = null;
-          userStatus.textContent = "Not logged in";
-          sideUserStatus.textContent = "Not logged in";
-
-          emailInput.style.display   = "block";
-          passInput.style.display    = "block";
-          signupBtn.style.display    = "inline-block";
-          loginBtn.style.display     = "inline-block";
-          logoutUserBtn.style.display = "none";
-
-          adminUnlocked = false;
-          setAdminStatus();
-          document.body.classList.remove("admin-ready","admin-open");
-          render();
-        }
-      });
-
-      signupBtn.onclick = () => {
-        const email = emailInput.value.trim();
-        const pass  = passInput.value.trim();
+      modalSignupBtn.onclick = () => {
+        const email = modalEmail.value.trim();
+        const pass  = modalPassword.value.trim();
         if (!email || !pass) {
           alert("Enter email & password");
           return;
@@ -870,9 +877,9 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           });
       };
 
-      loginBtn.onclick = () => {
-        const email = emailInput.value.trim();
-        const pass  = passInput.value.trim();
+      modalLoginBtn.onclick = () => {
+        const email = modalEmail.value.trim();
+        const pass  = modalPassword.value.trim();
         if (!email || !pass) {
           alert("Enter email & password");
           return;
@@ -884,17 +891,45 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           });
       };
 
-      logoutUserBtn.onclick = () => {
-        auth.signOut().catch(err => {
-          console.error(err);
-          alert("Logout error: " + err.message);
-        });
+      function doLogoutWithConfirm(){
+        if(!currentUserUid) return;
+        if(confirm("Logout?")){
+          auth.signOut().then(()=>alert("Logged out"));
+        }
+      }
+      logoutTextBtn.onclick = doLogoutWithConfirm;
+      sideUserAction.onclick = () => {
+        if(currentUserUid) doLogoutWithConfirm();
+        else openLoginModal();
       };
+
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          currentUserUid = user.uid;
+          const email = user.email || "User";
+          sideUserStatus.textContent = "Logged in as: " + email;
+          sideUserAction.textContent = "Logout?";
+          logoutTextBtn.style.display = "inline";
+          loadUserPrefs(currentUserUid);
+          closeLoginModal();
+        } else {
+          currentUserUid = null;
+          sideUserStatus.textContent = "Not logged in";
+          sideUserAction.textContent = "Login?";
+          logoutTextBtn.style.display = "none";
+
+          adminUnlocked = false;
+          setAdminStatus();
+          document.body.classList.remove("admin-ready","admin-open");
+          render();
+          closeLoginModal();
+        }
+      });
 
       /* ---------- ADD VIDEO (requires admin) ---------- */
       document.getElementById("addVideoBtn").onclick=()=>{
         if(!adminUnlocked){
-          alert("Login as admin first (tap logo 5 times).");
+          alert("Login as admin first (tap user icon 5 times).");
           return;
         }
         const brand=bSel.value;
@@ -1188,7 +1223,6 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         }
       }, 50);
 
-      // init text / status
       setAdminStatus();
       applyLanguage();
     });
