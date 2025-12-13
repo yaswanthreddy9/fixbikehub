@@ -200,29 +200,6 @@
       .desktop-only{display:none}
       .mobile-only{display:inline-flex}
     }
-
-    /* ---- LOADING SKELETON ---- */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    #e5e7eb 25%,
-    #f3f4f6 37%,
-    #e5e7eb 63%
-  );
-  background-size: 400% 100%;
-  animation: skeleton 1.4s ease infinite;
-  border-radius: 10px;
-}
-
-@keyframes skeleton {
-  0% { background-position: 100% 0 }
-  100% { background-position: -100% 0 }
-}
-
-.skeleton-card {
-  height: 260px;
-}
-
   </style>
 </head>
 
@@ -324,7 +301,7 @@
 
     <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
     <div id="brandButtons" class="buttons">
-      <button class="filter-btn" data-brand="hero">Hero MotoCorp</button>
+      <button class="filter-btn active" data-brand="hero">Hero MotoCorp</button>
       <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
       <button class="filter-btn" data-brand="tvs">TVS Motor</button>
       <button class="filter-btn" data-brand="royal">Royal Enfield</button>
@@ -387,14 +364,7 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
-
-  
-
     document.addEventListener("DOMContentLoaded", function () {
-
-      const loadingSkeleton = document.getElementById("loadingSkeleton");
-loadingSkeleton.style.display = "grid";
-
 
       /* ------------ FIREBASE CONFIG ------------ */
       const firebaseConfig = {
@@ -617,12 +587,8 @@ loadingSkeleton.style.display = "grid";
           .replace("youtube.com/shorts/","")
           .split(/[?&]/)[0];
       }
-      function applyBrandUI() {
-  document.querySelectorAll("#brandButtons .filter-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.brand === activeBrand);
-  });
-}
-  function render(){
+
+      function render(){
         videoGrid.innerHTML = "";
         const q = search.value.toLowerCase();
 
@@ -688,24 +654,20 @@ loadingSkeleton.style.display = "grid";
         saveLastState();
       }
 
-     function loadUserPrefs(uid){
-  db.collection("userPrefs").doc(uid).get()
-    .then(doc=>{
-      if(!doc.exists) return;
-
-      const d = doc.data();
-      if(d.lastBrand && models[d.lastBrand]){
-        activeBrand = d.lastBrand;
-        localStorage.setItem("lastBrand", activeBrand);
-
-        applyBrandUI();
-        loadModels(d.lastModel || null);
-        render();
+      function loadUserPrefs(uid){
+        db.collection("userPrefs").doc(uid).get()
+          .then(doc=>{
+            if(doc.exists){
+              const d = doc.data();
+              const brand = d.lastBrand;
+              const model = d.lastModel;
+              if(brand && models[brand]){
+                setBrandAndModel(brand, model || null);
+              }
+            }
+          })
+          .catch(err=>console.log("userPrefs load error", err));
       }
-    })
-    .catch(err=>console.log("userPrefs load error", err));
-}
-
 
       /* ---------- VIEW TABS ---------- */
       document.querySelectorAll(".view-tab").forEach(tab=>{
@@ -749,32 +711,24 @@ loadingSkeleton.style.display = "grid";
         saveLastState();
       }
 
-      function initBrandState() {
-  const stored = localStorage.getItem("lastBrand");
-  if (stored && models[stored]) {
-    activeBrand = stored;
-  } else {
-    activeBrand = "hero";
-  }
-}
-
-initBrandState();
-applyBrandUI();
-loadModels(null);
-
+      const storedBrand = localStorage.getItem("lastBrand");
+      if (storedBrand && models[storedBrand]) {
+        activeBrand = storedBrand;
+      }
+      loadModels(null);
 
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
-     brandButtons.forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    activeBrand = btn.dataset.brand;
-    localStorage.setItem("lastBrand", activeBrand);
-    localStorage.removeItem("lastModel");
+      brandButtons.forEach(btn=>{
+        if(btn.dataset.brand === activeBrand) btn.classList.add("active");
+        btn.addEventListener("click", ()=>{
+          brandButtons.forEach(x=>x.classList.remove("active"));
+          btn.classList.add("active");
+          activeBrand=btn.dataset.brand;
+          loadModels(null);
+          render();
+        });
+      });
 
-    applyBrandUI();
-    loadModels(null);
-    render();
-  });
-});
       // Search
       search.oninput=render;
 
@@ -1200,8 +1154,6 @@ loadModels(null);
       /* ---------- FIRESTORE LISTENER ---------- */
       db.collection("videos").orderBy("createdAt","asc")
         .onSnapshot(snap=>{
-          loadingSkeleton.style.display = "none";
-
           videos=[];
           let latest = null;
           snap.forEach(doc=>{
@@ -1276,5 +1228,3 @@ loadModels(null);
   </script>
 </body>
 </html>
-
-
