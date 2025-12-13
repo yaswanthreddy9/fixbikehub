@@ -1,258 +1,1230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>BikeFix Hub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BikeFix Hub</title>
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{background:#f4f4f4;color:#222}
+  <style>
+    /* ---- BASE STYLES ---- */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{background:#f4f4f4;color:#222}
 
-/* remove focus glow */
-button:focus,input:focus,select:focus,textarea:focus{outline:none;box-shadow:none}
+    button:focus,
+    input:focus,
+    select:focus,
+    textarea:focus{
+      outline:none;
+      box-shadow:none;
+    }
 
-/* header */
-header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
-.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
-.logo{font-size:20px;font-weight:700;cursor:pointer}
-.toolbar{display:flex;align-items:center;gap:8px}
+    header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
+    .logo{font-size:20px;font-weight:700;cursor:pointer}
+    .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+    .search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px;font-size:14px}
+    .header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:18px;min-width:40px;text-align:center}
 
-/* buttons */
-.header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:18px}
-.search-box input{padding:8px 12px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px}
+    .desktop-only{display:flex;align-items:center;gap:8px}
+    .mobile-only{display:none}
 
-/* layout */
-main{max-width:1100px;margin:auto;padding:16px}
-.filters-title{font-size:14px;margin:10px 0;color:#444;font-weight:600}
-.buttons{display:flex;flex-wrap:wrap;gap:8px}
-.filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:#fff;cursor:pointer;font-size:14px}
-.filter-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+    .lang-strip{max-width:190px;overflow-x:auto;scrollbar-width:none}
+    .lang-strip::-webkit-scrollbar{display:none}
+    #langScroll{display:flex;gap:4px}
+    .lang-pill{padding:4px 10px;border-radius:999px;border:1px solid #666;background:#111;color:#fff;font-size:11px;white-space:nowrap;cursor:pointer;opacity:.8}
+    .lang-pill.active{border-color:#facc15;opacity:1;animation:langBlink 1.5s infinite}
+    @keyframes langBlink{0%,100%{box-shadow:0 0 0px #facc15}50%{box-shadow:0 0 8px #facc15}}
 
-/* videos */
-.video-grid{display:grid;gap:15px;margin-top:20px}
-.video-card{background:#fff;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
-iframe{width:100%;height:220px;border:none}
-.video-info{padding:10px;font-weight:600;font-size:14px}
-.video-meta{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:#555}
+    .user-box{display:flex;flex-direction:column;align-items:center;gap:2px;margin-left:4px}
+    .logout-text{
+      border:none;
+      background:none;
+      color:#e5e7eb;
+      font-size:11px;
+      cursor:pointer;
+      padding:0;
+      display:none;
+    }
 
-/* empty */
-#empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
+    main{max-width:1100px;margin:auto;padding:16px}
+    .filters-title{font-size:14px;margin:10px 0;color:#444;font-weight:600}
+    .buttons{display:flex;flex-wrap:wrap;gap:8px}
+    .filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:white;cursor:pointer;font-size:14px}
+    .filter-btn.active{background:#2563eb;color:white;border-color:#0d56db}
 
-/* admin */
-.admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;color:white;cursor:pointer}
-.edit-btn{background:#f59e0b}
-.delete-btn{background:#ef4444}
+    .top-meta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+    .view-tabs{display:flex;gap:6px}
+    .view-tab{padding:6px 10px;border-radius:999px;border:1px solid #999;background:#f3f4f6;font-size:12px;cursor:pointer}
+    .view-tab.active{background:#111827;color:#fff;border-color:#111827}
+    .last-updated{font-size:11px;color:#666}
 
-/* dark mode */
-body.dark{background:#0f0f0f;color:#fff}
-body.dark header{background:#000}
-body.dark .filter-btn{background:#1a1a1a;color:#fff;border-color:#333}
-body.dark .filter-btn.active{background:#2563eb}
-body.dark .video-card{background:#1a1a1a}
-body.dark #empty{background:#333;color:#bbb}
+    .video-grid{display:grid;gap:15px;margin-top:20px}
+    .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+    iframe{width:100%;height:220px;border:none}
+    .video-info{padding:10px;font-size:14px;font-weight:600}
+    .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:#555}
+    .admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;cursor:pointer}
+    .edit-btn{background:#f59e0b;color:white}
+    .delete-btn{background:#ef4444;color:white}
+    #empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
 
-/* mobile */
-@media(max-width:600px){
-  .search-box input{width:100%}
-}
-</style>
+    /* ---- ADMIN PANEL (SIDEBAR) ---- */
+    #adminPanel{
+      position:fixed;
+      top:0;
+      right:-360px;
+      width:320px;
+      max-width:90vw;
+      height:100vh;
+      overflow-y:auto;
+      background:#e5e7eb;
+      padding:15px;
+      box-shadow:-4px 0 12px rgba(0,0,0,.25);
+      z-index:50;
+      transition:right .25s ease;
+      display:none;
+    }
+    body.admin-ready #adminPanel{display:block;}
+    body.admin-open #adminPanel{right:0;}
+
+    #adminPanel h3{margin-top:4px}
+    #adminPanel label{font-size:13px;font-weight:600;margin-top:8px;display:block}
+    #adminPanel input,#adminPanel select{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:14px}
+    #adminPanel textarea{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%;margin-top:4px;font-size:13px;resize:vertical}
+    #adminPanel button{padding:8px 10px;background:#22c55e;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:13px}
+    #adminNote{font-size:12px;margin-bottom:6px;color:#555}
+    #backupRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    #backupRow button,#backupRow label{background:#0ea5e9;color:white;border:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:bold;cursor:pointer}
+    #backupRow input{display:none}
+    #logoutBtn{background:#ef4444;margin-left:auto}
+    #adminClose{background:none;border:none;font-size:18px;cursor:pointer;color:#111;margin-left:auto}
+
+    #adminBackdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:40;
+      display:none;
+    }
+    body.admin-open #adminBackdrop{display:block;}
+
+    #adminToggleBtn{
+      position:fixed;
+      bottom:16px;
+      right:16px;
+      z-index:45;
+      background:#111827;
+      color:#fff;
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      display:none;
+      align-items:center;
+      gap:6px;
+      box-shadow:0 4px 10px rgba(0,0,0,.4);
+      cursor:pointer;
+    }
+    body.admin-ready #adminToggleBtn{display:flex;}
+
+    /* ---- SIDE MENU (MOBILE) ---- */
+    .side-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30;display:none}
+    .side-backdrop.show{display:block}
+    .side-menu{position:fixed;top:0;right:-260px;width:260px;height:100%;background:#111827;color:#fff;z-index:40;padding:16px;transition:right .25s ease;display:flex;flex-direction:column;gap:16px}
+    .side-menu.open{right:0}
+    .side-header{display:flex;justify-content:space-between;align-items:center}
+    .close-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+    .side-section{font-size:13px}
+    .side-section-title{font-size:12px;margin-bottom:4px;color:#e5e7eb}
+    .side-user-action{margin-top:4px;font-size:12px;color:#e5e7eb;text-decoration:underline;cursor:pointer}
+
+    /* ---- LOGIN MODAL ---- */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:60;
+      display:none;
+    }
+    .modal{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%) scale(.9);
+      opacity:0;
+      transition:opacity .18s ease,transform .18s ease;
+      z-index:61;
+      background:#f9fafb;
+      padding:16px 18px;
+      border-radius:12px;
+      max-width:320px;
+      width:90%;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      display:none;
+    }
+    .modal.show{
+      display:block;
+      opacity:1;
+      transform:translate(-50%,-50%) scale(1);
+    }
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .modal-header h3{margin:0;font-size:16px}
+    .modal-close{background:none;border:none;font-size:20px;cursor:pointer}
+    .modal input{width:100%;margin-top:6px;padding:7px;border-radius:6px;border:1px solid #ccc;font-size:14px}
+    .modal-buttons{display:flex;gap:8px;margin-top:10px}
+    .modal-buttons button{flex:1;padding:7px;border-radius:6px;border:none;background:#111827;color:#fff;font-size:13px;cursor:pointer}
+
+    /* ---- DARK MODE ---- */
+    body.dark{background:#0f0f0f;color:white}
+    body.dark header{background:#000}
+    body.dark .filter-btn{background:#1a1a1a;border-color:#333;color:white}
+    body.dark .filter-btn.active{background:#2563eb;color:white}
+    body.dark input,body.dark select,body.dark textarea{background:#111;color:white;border-color:#444}
+    body.dark .video-card{background:#1a1a1a}
+    body.dark #empty{background:#333;color:#bbb}
+    body.dark .view-tab{background:#111;border-color:#444;color:#ddd}
+    body.dark .view-tab.active{background:#2563eb;border-color:#2563eb}
+    body.dark .last-updated{color:#aaa}
+    body.dark .lang-pill{background:#000;border-color:#999}
+    body.dark #adminPanel{background:#111827;color:#e5e7eb}
+    body.dark #adminPanel button{background:#16a34a}
+    body.dark #adminToggleBtn{background:#2563eb}
+    body.dark .modal{background:#111827;color:#f9fafb}
+
+    /* --- MOBILE LAYOUT --- */
+    @media(max-width:600px){
+      .nav{flex-direction:column;align-items:stretch}
+      .toolbar{width:100%;justify-content:center;flex-wrap:nowrap}
+      .search-box{flex:1}
+      .search-box input{width:100%}
+      .desktop-only{display:none}
+      .mobile-only{display:inline-flex}
+    }
+  </style>
 </head>
 
 <body>
-<header>
-  <div class="nav">
-    <div class="logo" id="logo">BikeFix Hub</div>
-    <div class="toolbar">
-      <div class="search-box">
-        <input id="searchInput" placeholder="Search videos.." />
+  <header>
+    <div class="nav">
+      <div class="logo" id="logo">BikeFix Hub</div>
+      <div class="toolbar">
+        <div class="search-box">
+          <input id="searchInput" placeholder="Search videos.." />
+        </div>
+
+        <!-- Desktop controls -->
+        <div class="desktop-only">
+          <button id="darkToggle" class="header-btn">🌙</button>
+          <div class="lang-strip">
+            <div id="langScroll">
+              <button class="lang-pill lang-pill-main" data-lang="en">English</button>
+              <button class="lang-pill lang-pill-main" data-lang="hi">हिन्दी</button>
+              <button class="lang-pill lang-pill-main" data-lang="te">తెలుగు</button>
+              <button class="lang-pill lang-pill-main" data-lang="ta">தமிழ்</button>
+            </div>
+          </div>
+          <div style="width:8px;"></div>
+          <div class="user-box">
+            <button id="userIconBtn" class="header-btn" title="User">👤</button>
+            <button id="logoutTextBtn" class="logout-text">logout?</button>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="menuBtn" class="header-btn mobile-only">☰</button>
       </div>
-      <button id="darkToggle" class="header-btn">🌙</button>
-      <button id="userBtn" class="header-btn">👤</button>
+    </div>
+  </header>
+
+  <!-- Side menu for mobile -->
+  <div id="sideBackdrop" class="side-backdrop"></div>
+  <div id="sideMenu" class="side-menu">
+    <div class="side-header">
+      <span id="sideTitle">BikeFix Hub Menu</span>
+      <button id="closeMenu" class="close-btn">✕</button>
+    </div>
+
+    <div class="side-section">
+      <div class="side-section-title">Theme</div>
+      <button id="darkToggleMobile" class="header-btn" style="width:100%;justify-content:center;">🌙</button>
+    </div>
+
+    <div class="side-section">
+      <div class="side-section-title">Language</div>
+      <div class="lang-strip">
+        <div id="langScrollMobile">
+          <button class="lang-pill lang-pill-mobile" data-lang="en">English</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="hi">हिन्दी</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="te">తెలుగు</button>
+          <button class="lang-pill lang-pill-mobile" data-lang="ta">தமிழ్</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-section">
+      <div class="side-section-title">User</div>
+      <div id="sideUserStatus">Not logged in</div>
+      <div id="sideUserAction" class="side-user-action">Login?</div>
     </div>
   </div>
-</header>
 
-<main>
-  <div class="filters-title">1. Choose Brand</div>
-  <div id="brandButtons" class="buttons">
-    <button class="filter-btn" data-brand="hero">Hero MotoCorp</button>
-    <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
-    <button class="filter-btn" data-brand="tvs">TVS Motor</button>
-    <button class="filter-btn" data-brand="royal">Royal Enfield</button>
+  <!-- Admin sidebar + backdrop -->
+  <div id="adminBackdrop"></div>
+  <button id="adminToggleBtn"><span>🛠</span><span>Admin</span></button>
+
+  <!-- Login modal -->
+  <div id="loginBackdrop" class="modal-backdrop"></div>
+  <div id="loginModal" class="modal">
+    <div class="modal-header">
+      <h3>Login / Sign up</h3>
+      <button id="modalClose" class="modal-close">✕</button>
+    </div>
+    <p style="font-size:12px;margin-bottom:4px;color:#6b7280;">
+      Use your email and password to sign up once, then login anytime.
+    </p>
+    <input id="modalEmail" type="email" placeholder="Email" />
+    <input id="modalPassword" type="password" placeholder="Password" />
+    <div class="modal-buttons">
+      <button id="modalSignupBtn">Sign up</button>
+      <button id="modalLoginBtn">Login</button>
+    </div>
   </div>
 
-  <div class="filters-title">2. Choose Model</div>
-  <div id="modelButtons" class="buttons"></div>
+  <main>
+    <div class="top-meta">
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="bike" id="tabByBike">By Bike</button>
+        <button class="view-tab" data-view="all" id="tabAllVideos">All Videos</button>
+      </div>
+      <div class="last-updated" id="lastUpdated"></div>
+    </div>
 
-  <div id="empty">No videos yet.</div>
-  <div id="videos" class="video-grid"></div>
-</main>
+    <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
+    <div id="brandButtons" class="buttons">
+      <button class="filter-btn active" data-brand="hero">Hero MotoCorp</button>
+      <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
+      <button class="filter-btn" data-brand="tvs">TVS Motor</button>
+      <button class="filter-btn" data-brand="royal">Royal Enfield</button>
+    </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <div class="filters-title" data-i18n="chooseModel">2. Choose Model</div>
+    <div id="modelButtons" class="buttons"></div>
 
-<script>
-document.addEventListener("DOMContentLoaded",()=>{
+    <div id="empty" data-i18n="noVideos">No videos yet. Add videos using admin mode.</div>
+    <div id="videos" class="video-grid"></div>
+  </main>
 
-/* ---------- FIREBASE ---------- */
-firebase.initializeApp({
-  apiKey:"AIzaSyBU93PMVY7YKUaez3tkpiywYtIcpZTUQBw",
-  authDomain:"bike-fix-pulsar.firebaseapp.com",
-  projectId:"bike-fix-pulsar"
-});
-const db=firebase.firestore();
-const auth=firebase.auth();
-const provider=new firebase.auth.GoogleAuthProvider();
-const ADMIN_EMAIL="myeswanthreddy321@gmail.com";
+  <!-- Admin Panel Sidebar -->
+  <div id="adminPanel">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
+      <button id="adminClose" title="Close">✕</button>
+    </div>
+    <div id="adminNote" style="margin-top:6px;">
+      <span data-i18n="adminStatusLabel">Admin status:</span>
+      <b id="adminStatus">Not logged in</b>
+    </div>
 
-/* ---------- DATA ---------- */
-const models={
-  hero:["Splendor Plus","HF Deluxe","Glamour","Passion Plus","Xtreme 160R","Xpulse 200 4V","Karizma XMR","Mavrick 440"],
-  bajaj:["Pulsar 150","Pulsar NS200","Pulsar 220F","Dominar 400"],
-  tvs:["Apache RTR 160","Raider 125","Ronin"],
-  royal:["Classic 350","Himalayan 450","Hunter 350"]
-};
+    <label data-i18n="brandLabel">Brand</label>
+    <select id="adminBrand"></select>
 
-let activeBrand="hero";
-let activeModel=null;
-let adminUnlocked=false;
-let videos=[];
+    <label data-i18n="modelLabel">Model</label>
+    <select id="adminModel"></select>
 
-/* ---------- HELPERS ---------- */
-function extractId(url){
-  return url.replace(/^https?:\/\//,"")
-            .replace("youtu.be/","")
-            .replace("youtube.com/watch?v=","")
-            .split(/[?&]/)[0];
-}
+    <label data-i18n="videoTitleLabel">Video Title</label>
+    <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
 
-function applyBrandUI(){
-  document.querySelectorAll("#brandButtons .filter-btn")
-    .forEach(b=>b.classList.toggle("active",b.dataset.brand===activeBrand));
-}
+    <label data-i18n="youtubeLabel">YouTube URL or ID</label>
+    <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
 
-/* ---------- MODELS ---------- */
-function loadModels(pref){
-  const box=document.getElementById("modelButtons");
-  box.innerHTML="";
-  const list=models[activeBrand];
-  activeModel=pref&&list.includes(pref)?pref:list[0];
+    <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
+      🔍 Get Title from YouTube
+    </button>
 
-  list.forEach(m=>{
-    const b=document.createElement("button");
-    b.className="filter-btn"+(m===activeModel?" active":"");
-    b.textContent=m;
-    b.onclick=()=>{
-      document.querySelectorAll("#modelButtons .filter-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      activeModel=m;
-      savePrefs();
-      render();
-    };
-    box.appendChild(b);
-  });
-}
+    <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
 
-/* ---------- RENDER ---------- */
-function render(){
-  const q=document.getElementById("searchInput").value.toLowerCase();
-  const grid=document.getElementById("videos");
-  grid.innerHTML="";
-  let count=0;
+    <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
+    <textarea id="bulkInput" rows="4" placeholder="Example:
+Pulsar 150 clutch | https://youtu.be/xxxx
+NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
+    <button id="bulkAddBtn" type="button">Add Bulk</button>
 
-  videos.forEach(v=>{
-    if(v.brand!==activeBrand||v.model!==activeModel||!v.title.toLowerCase().includes(q)) return;
-    count++;
-    const card=document.createElement("div");
-    card.className="video-card";
-    card.innerHTML=`
-      <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
-      <div class="video-info">${v.title}
-        <div class="video-meta">
-          <span>${v.brand} • ${v.model}</span>
-          ${adminUnlocked?`<span>
-            <button class="edit-btn" data-id="${v.id}">Edit</button>
-            <button class="delete-btn" data-id="${v.id}">Delete</button>
-          </span>`:""}
-        </div>
-      </div>`;
-    grid.appendChild(card);
-  });
-  document.getElementById("empty").style.display=count? "none":"block";
-}
+    <div id="backupRow">
+      <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
+      <label for="importInput" data-i18n="importBackup">Import Backup
+        <input id="importInput" type="file" accept="application/json" />
+      </label>
+      <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
+    </div>
+  </div>
 
-/* ---------- PREFS ---------- */
-function savePrefs(){
-  localStorage.setItem("lastBrand",activeBrand);
-  localStorage.setItem("lastModel",activeModel);
-}
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-/* ---------- INIT ---------- */
-const lb=localStorage.getItem("lastBrand");
-if(lb&&models[lb]) activeBrand=lb;
-applyBrandUI();
-loadModels(localStorage.getItem("lastModel"));
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
 
-/* ---------- BRAND CLICK ---------- */
-document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
-  btn.onclick=()=>{
-    activeBrand=btn.dataset.brand;
-    localStorage.removeItem("lastModel");
-    applyBrandUI();
-    loadModels(null);
-    render();
-  };
-});
+      /* ------------ FIREBASE CONFIG ------------ */
+      const firebaseConfig = {
+        apiKey: "AIzaSyBU93PMVY7YKUaez3tkpiywYtIcpZTUQBw",
+        authDomain: "bike-fix-pulsar.firebaseapp.com",
+        projectId: "bike-fix-pulsar",
+        storageBucket: "bike-fix-pulsar.firebasestorage.app",
+        messagingSenderId: "464082773378",
+        appId: "1:464082773378:web:6376c2ddd5635fd2061b9b"
+      };
 
-/* ---------- SEARCH ---------- */
-document.getElementById("searchInput").oninput=render;
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+      const provider = new firebase.auth.GoogleAuthProvider();
 
-/* ---------- DARK MODE ---------- */
-document.getElementById("darkToggle").onclick=()=>{
-  document.body.classList.toggle("dark");
-};
+      const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
 
-/* ---------- SECRET ADMIN ---------- */
-let clicks=0,timer=null;
-document.getElementById("logo").onclick=()=>{
-  clicks++;
-  if(clicks===1) timer=setTimeout(()=>clicks=0,2000);
-  if(clicks>=5){
-    clearTimeout(timer);clicks=0;
-    auth.signInWithPopup(provider).then(r=>{
-      if(r.user.email===ADMIN_EMAIL){
-        adminUnlocked=true;
-        alert("Admin unlocked");
+      /* ------------ MODEL DATA ------------ */
+      const models = {
+        hero:["Splendor Plus","HF Deluxe","Glamour","Passion Plus","Xtreme 160R","Xpulse 200 4V","Karizma XMR","Mavrick 440"],
+        bajaj:["All Pulsar (General)","Pulsar 150","Pulsar NS200","Pulsar 220F","Dominar 400","Avenger Cruise 220","Platina","Chetak Electric"],
+        tvs:["Apache RTR 160","Apache RTR 310","Raider 125","Ronin","Sport","Jupiter","iQube Electric"],
+        royal:["Classic 350","Bullet 350","Himalayan 450","Interceptor 650","Meteor 350","Hunter 350","Shotgun 650"]
+      };
+
+      let activeBrand = "hero";
+      let activeModel = null;
+      let adminUnlocked = false;
+      let currentUserUid = null;
+      let videos = [];
+      let latestUpdated = null;
+      let viewMode = "bike";
+
+      const search = document.getElementById("searchInput");
+      const videoGrid = document.getElementById("videos");
+      const empty = document.getElementById("empty");
+      const adminStatus = document.getElementById("adminStatus");
+      const adminPanel = document.getElementById("adminPanel");
+      const logo = document.getElementById("logo");
+      const lastUpdatedEl = document.getElementById("lastUpdated");
+
+      const menuBtn = document.getElementById("menuBtn");
+      const sideMenu = document.getElementById("sideMenu");
+      const sideBackdrop = document.getElementById("sideBackdrop");
+      const closeMenu = document.getElementById("closeMenu");
+
+      const darkToggle = document.getElementById("darkToggle");
+      const darkToggleMobile = document.getElementById("darkToggleMobile");
+
+      const adminToggleBtn = document.getElementById("adminToggleBtn");
+      const adminBackdrop = document.getElementById("adminBackdrop");
+      const adminClose = document.getElementById("adminClose");
+
+      const sideUserStatus = document.getElementById("sideUserStatus");
+      const sideUserAction = document.getElementById("sideUserAction");
+
+      const userIconBtn = document.getElementById("userIconBtn");
+      const logoutTextBtn = document.getElementById("logoutTextBtn");
+
+      const loginBackdrop = document.getElementById("loginBackdrop");
+      const loginModal = document.getElementById("loginModal");
+      const modalClose = document.getElementById("modalClose");
+      const modalEmail = document.getElementById("modalEmail");
+      const modalPassword = document.getElementById("modalPassword");
+      const modalSignupBtn = document.getElementById("modalSignupBtn");
+      const modalLoginBtn = document.getElementById("modalLoginBtn");
+
+      /* ------------ LANGUAGE SYSTEM ------------ */
+      const translations = {
+        en:{
+          title:"BikeFix Hub",
+          search:"Search videos..",
+          chooseBrand:"1. Choose Brand",
+          chooseModel:"2. Choose Model",
+          noVideos:"No videos yet. Add videos using admin mode.",
+          adminStatusLabel:"Admin status:",
+          addVideoTitle:"Add Video",
+          brandLabel:"Brand",
+          modelLabel:"Model",
+          videoTitleLabel:"Video Title",
+          youtubeLabel:"YouTube URL or ID",
+          addVideoButton:"Add Video",
+          exportBackup:"Export Backup",
+          importBackup:"Import Backup",
+          logout:"Logout",
+          lastUpdatedPrefix:"Last updated:",
+          viewByBike:"By Bike",
+          viewAll:"All Videos"
+        },
+        hi:{
+          title:"BikeFix Hub",
+          search:"वीडियो खोजें..",
+          chooseBrand:"1. ब्रांड चुनें",
+          chooseModel:"2. मॉडल चुनें",
+          noVideos:"कोई वीडियो नहीं। एडमिन से वीडियो जोड़ें।",
+          adminStatusLabel:"एडमिन स्थिति:",
+          addVideoTitle:"वीडियो जोड़ें",
+          brandLabel:"ब्रांड",
+          modelLabel:"मॉडल",
+          videoTitleLabel:"वीडियो का नाम",
+          youtubeLabel:"YouTube URL या ID",
+          addVideoButton:"वीडियो जोड़ें",
+          exportBackup:"बैकअप एक्सपोर्ट",
+          importBackup:"बैकअप इम्पोर्ट",
+          logout:"लॉगआउट",
+          lastUpdatedPrefix:"आखिरी अपडेट:",
+          viewByBike:"बाइक के अनुसार",
+          viewAll:"सभी वीडियो"
+        },
+        te:{
+          title:"BikeFix Hub",
+          search:"వీడియోలు సెర్చ్ చేయండి..",
+          chooseBrand:"1. బ్రాండ్ ఎంచుకోండి",
+          chooseModel:"2. మోడల్ ఎంచుకోండి",
+          noVideos:"ఇప్పటికి వీడియోలు లేవు. అడ్మిన్ జోడించాలి.",
+          adminStatusLabel:"అడ్మిన్ స్టేటస్:",
+          addVideoTitle:"వీడియో యాడ్ చేయండి",
+          brandLabel:"బ్రాండ్",
+          modelLabel:"మోడల్",
+          videoTitleLabel:"వీడియో టైటిల్",
+          youtubeLabel:"YouTube URL లేదా ID",
+          addVideoButton:"వీడియో యాడ్ చేయండి",
+          exportBackup:"బ్యాకప్ ఎగుమతి",
+          importBackup:"బ్యాకప్ దిగుమతి",
+          logout:"లాగౌట్",
+          lastUpdatedPrefix:"చివరిసారి అప్డేట్:",
+          viewByBike:"బైక్ ద్వారా",
+          viewAll:"అన్ని వీడియోలు"
+        },
+        ta:{
+          title:"BikeFix Hub",
+          search:"வீடியோக்களை தேடுங்கள்..",
+          chooseBrand:"1. வாகன பிராண்ட் தேர்வு",
+          chooseModel:"2. மாடல் தேர்வு",
+          noVideos:"வீடியோக்கள் இல்லை. நிர்வாகி சேர்க்க வேண்டும்.",
+          adminStatusLabel:"நிர்வாக நிலை:",
+          addVideoTitle:"வீடியோ சேர்க்கவும்",
+          brandLabel:"பிராண்ட்",
+          modelLabel:"மாடல்",
+          videoTitleLabel:"வீடியோ தலைப்பு",
+          youtubeLabel:"YouTube URL அல்லது ID",
+          addVideoButton:"வீடியோ சேர்க்கவும்",
+          exportBackup:"காப்புப் பிரதி எக்ஸ்போர்ட்",
+          importBackup:"காப்புப் பிரதி இம்போர்ட்",
+          logout:"லாக் அவுட்",
+          lastUpdatedPrefix:"கடைசியாக புதுப்பிக்கப்பட்டது:",
+          viewByBike:"பைக் அடிப்படையில்",
+          viewAll:"அனைத்து வீடியோக்கள்"
+        }
+      };
+
+      let currentLang = localStorage.getItem("uiLang") || "en";
+
+      function updateLastUpdated(dateObj) {
+        latestUpdated = dateObj;
+        const t = translations[currentLang] || translations.en;
+        if (!dateObj) {
+          lastUpdatedEl.textContent = "";
+          return;
+        }
+        const d = dateObj;
+        const pad = n => (n < 10 ? "0" + n : n);
+        const str = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        lastUpdatedEl.textContent = `${t.lastUpdatedPrefix} ${str}`;
+      }
+
+      function applyLanguage() {
+        const t = translations[currentLang] || translations.en;
+        logo.textContent = t.title;
+        document.getElementById("sideTitle").textContent = t.title + " Menu";
+        search.placeholder = t.search;
+        document.querySelector('[data-i18n="chooseBrand"]').textContent = t.chooseBrand;
+        document.querySelector('[data-i18n="chooseModel"]').textContent = t.chooseModel;
+        empty.textContent = t.noVideos;
+        document.querySelector('[data-i18n="adminStatusLabel"]').textContent = t.adminStatusLabel;
+        document.querySelector('[data-i18n="addVideoTitle"]').textContent = t.addVideoTitle;
+        document.querySelector('[data-i18n="brandLabel"]').textContent = t.brandLabel;
+        document.querySelector('[data-i18n="modelLabel"]').textContent = t.modelLabel;
+        document.querySelector('[data-i18n="videoTitleLabel"]').textContent = t.videoTitleLabel;
+        document.querySelector('[data-i18n="youtubeLabel"]').textContent = t.youtubeLabel;
+        document.querySelector('[data-i18n="addVideoButton"]').textContent = t.addVideoButton;
+        document.querySelector('[data-i18n="exportBackup"]').textContent = t.exportBackup;
+        document.querySelector('[data-i18n="importBackup"]').childNodes[0].nodeValue = t.importBackup + " ";
+        document.querySelector('[data-i18n="logout"]').textContent = t.logout;
+        document.getElementById("tabByBike").textContent = t.viewByBike;
+        document.getElementById("tabAllVideos").textContent = t.viewAll;
+        updateLastUpdated(latestUpdated);
+      }
+
+      function setupLangPills(selector){
+        document.querySelectorAll(selector).forEach(pill=>{
+          if(pill.dataset.lang === currentLang) pill.classList.add("active");
+          pill.addEventListener("click", ()=>{
+            currentLang = pill.dataset.lang;
+            localStorage.setItem("uiLang", currentLang);
+            document.querySelectorAll(".lang-pill").forEach(p=>p.classList.remove("active"));
+            document.querySelectorAll(`[data-lang="${currentLang}"]`).forEach(p=>p.classList.add("active"));
+            applyLanguage();
+          });
+        });
+      }
+      setupLangPills(".lang-pill-main");
+      setupLangPills(".lang-pill-mobile");
+
+      /* ------------ HELPERS ------------ */
+      function setAdminStatus() {
+        adminStatus.textContent = adminUnlocked ? "Logged in" : "Not logged in";
+        adminStatus.style.color = adminUnlocked ? "lightgreen" : "red";
+      }
+
+      function extractId(url){
+        return url
+          .trim()
+          .replace(/^https?:\/\//,"")
+          .replace("youtu.be/","")
+          .replace("www.youtube.com/watch?v=","")
+          .replace("youtube.com/watch?v=","")
+          .replace("www.youtube.com/shorts/","")
+          .replace("youtube.com/shorts/","")
+          .split(/[?&]/)[0];
+      }
+
+      function render(){
+        videoGrid.innerHTML = "";
+        const q = search.value.toLowerCase();
+
+        videos.forEach(v=>{
+          let visible = true;
+          if (viewMode === "bike") {
+            visible = (v.brand === activeBrand &&
+                       v.model === activeModel &&
+                       v.title.toLowerCase().includes(q));
+          } else {
+            visible = v.title.toLowerCase().includes(q);
+          }
+          if(!visible) return;
+
+          const card=document.createElement("div");
+          card.className="video-card";
+          card.dataset.id = v.id;
+
+          const adminBtns = adminUnlocked ? `
+            <div class="admin-actions">
+              <button class="edit-btn" data-id="${v.id}">Edit</button>
+              <button class="delete-btn" data-id="${v.id}">Delete</button>
+            </div>` : "";
+
+          card.innerHTML=`
+            <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
+            <div class="video-info">
+              ${v.title}
+              <div class="video-meta">
+                <span>${v.brand.toUpperCase()} • ${v.model}</span>
+                ${adminBtns}
+              </div>
+            </div>
+          `;
+          videoGrid.appendChild(card);
+        });
+
+        empty.style.display = videoGrid.children.length===0 ? "block" : "none";
+      }
+
+      /* ---------- SAVE / LOAD LAST STATE ---------- */
+      function saveLastState(){
+        localStorage.setItem("lastBrand", activeBrand);
+        if(activeModel) localStorage.setItem("lastModel", activeModel);
+
+        if(currentUserUid){
+          db.collection("userPrefs").doc(currentUserUid)
+            .set({ lastBrand: activeBrand, lastModel: activeModel || null }, {merge:true})
+            .catch(err=>console.log("userPrefs save error", err));
+        }
+      }
+
+      function setBrandAndModel(brand, model){
+        if(!models[brand]) return;
+        activeBrand = brand;
+
+        document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
+          btn.classList.toggle("active", btn.dataset.brand === brand);
+        });
+
+        loadModels(model);
         render();
-      }else auth.signOut();
+        saveLastState();
+      }
+
+      function loadUserPrefs(uid){
+        db.collection("userPrefs").doc(uid).get()
+          .then(doc=>{
+            if(doc.exists){
+              const d = doc.data();
+              const brand = d.lastBrand;
+              const model = d.lastModel;
+              if(brand && models[brand]){
+                setBrandAndModel(brand, model || null);
+              }
+            }
+          })
+          .catch(err=>console.log("userPrefs load error", err));
+      }
+
+      /* ---------- VIEW TABS ---------- */
+      document.querySelectorAll(".view-tab").forEach(tab=>{
+        tab.addEventListener("click", ()=>{
+          document.querySelectorAll(".view-tab").forEach(t=>t.classList.remove("active"));
+          tab.classList.add("active");
+          viewMode = tab.dataset.view;
+          render();
+        });
+      });
+
+      /* ---------- MODELS & BRAND ---------- */
+      function loadModels(preferredModel){
+        const modelArea=document.getElementById("modelButtons");
+        modelArea.innerHTML="";
+        const allModels = models[activeBrand] || [];
+
+        const storedModel = localStorage.getItem("lastModel");
+        let initialModel = allModels[0];
+        if(preferredModel && allModels.includes(preferredModel)){
+          initialModel = preferredModel;
+        }else if(storedModel && allModels.includes(storedModel)){
+          initialModel = storedModel;
+        }
+
+        allModels.forEach((m)=>{
+          const b=document.createElement("button");
+          const isActive = (m === initialModel);
+          b.className="filter-btn" + (isActive ? " active" : "");
+          b.innerText=m;
+          b.onclick=()=>{
+            document.querySelectorAll("#modelButtons .filter-btn").forEach(x=>x.classList.remove("active"));
+            b.classList.add("active");
+            activeModel=m;
+            saveLastState();
+            render();
+          };
+          modelArea.appendChild(b);
+          if(isActive) activeModel = m;
+        });
+        saveLastState();
+      }
+
+      const storedBrand = localStorage.getItem("lastBrand");
+      if (storedBrand && models[storedBrand]) {
+        activeBrand = storedBrand;
+      }
+      loadModels(null);
+
+      const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
+      brandButtons.forEach(btn=>{
+        if(btn.dataset.brand === activeBrand) btn.classList.add("active");
+        btn.addEventListener("click", ()=>{
+          brandButtons.forEach(x=>x.classList.remove("active"));
+          btn.classList.add("active");
+          activeBrand=btn.dataset.brand;
+          loadModels(null);
+          render();
+        });
+      });
+
+      // Search
+      search.oninput=render;
+
+      // Logo scroll + SECRET ADMIN (5 clicks)
+      let logoClicks = 0;
+      let logoTimer = null;
+      logo.onclick = () => {
+        window.scrollTo({top:0,behavior:"smooth"});
+        logoClicks++;
+        if(logoClicks === 1){
+          logoTimer = setTimeout(()=>{ logoClicks = 0; }, 2000);
+        }
+        if(logoClicks >= 5){
+          logoClicks = 0;
+          clearTimeout(logoTimer);
+          triggerAdminLogin();
+        }
+      };
+
+      // Dark mode toggle shared
+      function applyTheme(){
+        const mode=localStorage.getItem("theme");
+        const isDark = mode==="dark";
+        document.body.classList.toggle("dark", isDark);
+        const icon = isDark ? "☀️" : "🌙";
+        if(darkToggle) darkToggle.textContent = icon;
+        if(darkToggleMobile) darkToggleMobile.textContent = icon;
+      }
+      function toggleTheme(){
+        const isDark = !document.body.classList.contains("dark");
+        localStorage.setItem("theme",isDark?"dark":"light");
+        applyTheme();
+      }
+      if(darkToggle) darkToggle.onclick = toggleTheme;
+      if(darkToggleMobile) darkToggleMobile.onclick = toggleTheme;
+      applyTheme();
+
+      // Side menu open/close
+      function openMenu(){ sideMenu.classList.add("open"); sideBackdrop.classList.add("show"); }
+      function closeMenuFn(){ sideMenu.classList.remove("open"); sideBackdrop.classList.remove("show"); }
+      menuBtn.onclick = openMenu;
+      closeMenu.onclick = closeMenuFn;
+      sideBackdrop.onclick = closeMenuFn;
+
+      // Admin selectors
+      const bSel=document.getElementById("adminBrand");
+      const mSel=document.getElementById("adminModel");
+      Object.keys(models).forEach(k=>{
+        const o=document.createElement("option");
+        o.value=k;
+        o.text=k.toUpperCase();
+        bSel.appendChild(o);
+      });
+      bSel.onchange=()=>{
+        mSel.innerHTML="";
+        (models[bSel.value] || []).forEach(m=>{
+          const o=document.createElement("option");
+          o.value=m;
+          o.text=m;
+          mSel.appendChild(o);
+        });
+      };
+      bSel.onchange();
+
+      /* ---------- ADMIN SIDEBAR TOGGLE ---------- */
+      function openAdminPanel(){ document.body.classList.add("admin-open"); }
+      function closeAdminPanel(){ document.body.classList.remove("admin-open"); }
+      adminToggleBtn.onclick = ()=>{ document.body.classList.toggle("admin-open"); };
+      adminBackdrop.onclick = closeAdminPanel;
+      adminClose.onclick = closeAdminPanel;
+
+      /* ---------- LOGIN MODAL HELPERS ---------- */
+      function openLoginModal(){
+        loginBackdrop.style.display = "block";
+        loginModal.style.display = "block";
+        requestAnimationFrame(()=>loginModal.classList.add("show"));
+      }
+      function closeLoginModal(){
+        loginModal.classList.remove("show");
+        setTimeout(()=>{
+          loginModal.style.display = "none";
+          loginBackdrop.style.display = "none";
+        },150);
+      }
+      loginBackdrop.onclick = closeLoginModal;
+      modalClose.onclick = closeLoginModal;
+
+      // User icon opens login modal ONLY
+      userIconBtn.onclick = openLoginModal;
+
+      /* ---------- ADMIN LOGIN (Google, from logo) ---------- */
+      function unlockAdmin() {
+        adminUnlocked = true;
+        setAdminStatus();
+        document.body.classList.add("admin-ready");
+        openAdminPanel();
+        alert("Admin login success");
+        render();
+      }
+
+      function triggerAdminLogin(){
+        auth.signInWithPopup(provider)
+          .then(res=>{
+            const email = res.user && res.user.email;
+            if(email === ADMIN_EMAIL){
+              unlockAdmin();
+            }else{
+              alert("This Google account is not allowed.");
+              auth.signOut();
+            }
+          })
+          .catch(err=>{
+            console.error("Google login failed:", err);
+            alert("Google login failed: " + err.code);
+          });
+      }
+
+      // Admin logout in panel
+      document.getElementById("logoutBtn").onclick = () => {
+        if (!adminUnlocked) return;
+        if (!confirm("Log out admin (and user)?")) return;
+        auth.signOut().finally(()=>{
+          adminUnlocked = false;
+          setAdminStatus();
+          document.body.classList.remove("admin-ready","admin-open");
+          render();
+        });
+      };
+
+      /* ---------- NORMAL USER AUTH (email/password) ---------- */
+      modalSignupBtn.onclick = () => {
+        const email = modalEmail.value.trim();
+        const pass  = modalPassword.value.trim();
+        if (!email || !pass) {
+          alert("Enter email & password");
+          return;
+        }
+        auth.createUserWithEmailAndPassword(email, pass)
+          .then(() => {
+            alert("Account created & logged in!");
+          })
+          .catch(err => {
+            console.error(err);
+            alert("Sign up error: " + err.message);
+          });
+      };
+
+      modalLoginBtn.onclick = () => {
+        const email = modalEmail.value.trim();
+        const pass  = modalPassword.value.trim();
+        if (!email || !pass) {
+          alert("Enter email & password");
+          return;
+        }
+        auth.signInWithEmailAndPassword(email, pass)
+          .catch(err => {
+            console.error(err);
+            alert("Login error: " + err.message);
+          });
+      };
+
+      function doLogoutWithConfirm(){
+        if(!currentUserUid) return;
+        if(confirm("Logout?")){
+          auth.signOut().then(()=>alert("Logged out"));
+        }
+      }
+      logoutTextBtn.onclick = doLogoutWithConfirm;
+      sideUserAction.onclick = () => {
+        if(currentUserUid) doLogoutWithConfirm();
+        else openLoginModal();
+      };
+
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          currentUserUid = user.uid;
+          const email = user.email || "User";
+          sideUserStatus.textContent = "Logged in as: " + email;
+          sideUserAction.textContent = "Logout?";
+          logoutTextBtn.style.display = "inline";
+          loadUserPrefs(currentUserUid);
+          closeLoginModal();
+        } else {
+          currentUserUid = null;
+          sideUserStatus.textContent = "Not logged in";
+          sideUserAction.textContent = "Login?";
+          logoutTextBtn.style.display = "none";
+
+          adminUnlocked = false;
+          setAdminStatus();
+          document.body.classList.remove("admin-ready","admin-open");
+          render();
+          closeLoginModal();
+        }
+      });
+
+      /* ---------- ADD VIDEO (requires admin) ---------- */
+      document.getElementById("addVideoBtn").onclick=()=>{
+        if(!adminUnlocked){
+          alert("Login as admin first (click logo 5 times).");
+          return;
+        }
+        const brand=bSel.value;
+        const model=mSel.value;
+        const title=document.getElementById("adminTitle").value.trim();
+        const url=document.getElementById("adminUrl").value.trim();
+        if(!title || !url){
+          alert("Fill all fields");
+          return;
+        }
+        const ytId=extractId(url);
+
+        db.collection("videos").add({
+          brand, model, title, ytId,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(()=>{
+          document.getElementById("adminTitle").value="";
+          document.getElementById("adminUrl").value="";
+          alert("Video added!");
+        })
+        .catch(err=>{
+          console.error(err);
+          alert("Error saving video: " + err.code);
+        });
+      };
+
+      /* ---------- AUTO TITLE FROM YOUTUBE ---------- */
+      async function fetchYoutubeTitle(url) {
+        try {
+          if (!url) return null;
+          let full = url;
+          if (!/^https?:\/\//i.test(url)) {
+            full = "https://www.youtube.com/watch?v=" + url;
+          }
+          const oembedUrl = "https://www.youtube.com/oembed?format=json&url=" +
+                            encodeURIComponent(full);
+          const res = await fetch(oembedUrl);
+          if (!res.ok) return null;
+          const data = await res.json();
+          return data.title || null;
+        } catch (e) {
+          console.error("oEmbed error", e);
+          return null;
+        }
+      }
+
+      document.getElementById("fetchTitleBtn").onclick = async () => {
+        const urlInput = document.getElementById("adminUrl");
+        const titleInput = document.getElementById("adminTitle");
+        const url = urlInput.value.trim();
+        if (!url) {
+          alert("Paste YouTube URL or ID first.");
+          return;
+        }
+        const oldPlaceholder = titleInput.placeholder;
+        titleInput.placeholder = "Fetching title from YouTube...";
+        const title = await fetchYoutubeTitle(url);
+        titleInput.placeholder = oldPlaceholder;
+        if (title) {
+          titleInput.value = title;
+        } else {
+          alert("Could not fetch title. Please type it manually.");
+        }
+      };
+
+      /* ---------- BULK ADD (requires admin) ---------- */
+      const bulkInput = document.getElementById("bulkInput");
+      const bulkAddBtn = document.getElementById("bulkAddBtn");
+
+      bulkAddBtn.onclick = () => {
+        if(!adminUnlocked){
+          alert("Login as admin first.");
+          return;
+        }
+        const lines = bulkInput.value.split("\n");
+        const brand = bSel.value;
+        const model = mSel.value;
+        const toAdd = [];
+
+        lines.forEach(line=>{
+          const trimmed = line.trim();
+          if(!trimmed) return;
+          const parts = trimmed.split("|");
+          if(parts.length < 2) return;
+          const title = parts[0].trim();
+          const url = parts[1].trim();
+          if(!title || !url) return;
+          const ytId = extractId(url);
+          toAdd.push({brand,model,title,ytId});
+        });
+
+        if(!toAdd.length){
+          alert("No valid lines found. Use: Title | URL");
+          return;
+        }
+
+        Promise.all(
+          toAdd.map(v =>
+            db.collection("videos").add({
+              brand:v.brand,
+              model:v.model,
+              title:v.title,
+              ytId:v.ytId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+          )
+        ).then(()=>{
+          bulkInput.value = "";
+          alert("Bulk videos added!");
+        }).catch(err=>{
+          console.error(err);
+          alert("Bulk add failed: " + err.code);
+        });
+      };
+
+      /* ---------- EDIT / DELETE (admin only) ---------- */
+      document.addEventListener("click", (e)=>{
+        if(!adminUnlocked) return;
+
+        if(e.target.classList.contains("edit-btn")){
+          const id=e.target.dataset.id;
+          const vid = videos.find(v=>v.id===id);
+          if(!vid) return;
+          const updated = prompt("Edit title:", vid.title);
+          if(!updated) return;
+          db.collection("videos").doc(id).update({ title:updated.trim() })
+            .catch(err=>{
+              console.error(err);
+              alert("Update failed: " + err.code);
+            });
+        }
+
+        if(e.target.classList.contains("delete-btn")){
+          const id=e.target.dataset.id;
+          const vid = videos.find(v=>v.id===id);
+          if(!vid) return;
+          if(!confirm(`Delete video "${vid.title}"? This cannot be undone.`)) return;
+          db.collection("videos").doc(id).delete()
+            .catch(err=>{
+              console.error(err);
+              alert("Delete failed: " + err.code);
+            });
+        }
+      });
+
+      /* ---------- BACKUP EXPORT / IMPORT ---------- */
+      const exportBtn = document.getElementById("exportBtn");
+      const importInput = document.getElementById("importInput");
+
+      exportBtn.onclick = () => {
+        if(!adminUnlocked){
+          alert("Login as admin first.");
+          return;
+        }
+        if(!videos.length){
+          alert("No videos to export.");
+          return;
+        }
+        const data = videos.map(v=>({
+          brand:v.brand, model:v.model, title:v.title,
+          ytId:v.ytId, createdAtMs:v.createdAtMs || null
+        }));
+        const blob = new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bikefix-backup.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      importInput.onchange = (e) => {
+        if(!adminUnlocked){
+          alert("Login as admin first.");
+          return;
+        }
+        const file = e.target.files[0];
+        if(!file) return;
+        if(!confirm("Importing backup will REPLACE all existing videos. Continue?")){ 
+          importInput.value=""; 
+          return; 
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          try{
+            const data = JSON.parse(reader.result);
+            if(!Array.isArray(data)) throw new Error("Invalid format");
+            db.collection("videos").get().then(snap=>{
+              const batchDel = db.batch();
+              snap.forEach(doc=>batchDel.delete(doc.ref));
+              return batchDel.commit();
+            }).then(()=>{
+              const batchAdd = db.batch();
+              data.forEach(v=>{
+                const ref = db.collection("videos").doc();
+                batchAdd.set(ref,{
+                  brand:v.brand,
+                  model:v.model,
+                  title:v.title,
+                  ytId:v.ytId,
+                  createdAt: v.createdAtMs ? new Date(v.createdAtMs) : firebase.firestore.FieldValue.serverTimestamp()
+                });
+              });
+              return batchAdd.commit();
+            }).then(()=>{
+              alert("Backup imported successfully!");
+            }).catch(err=>{
+              console.error(err);
+              alert("Import failed: " + err.code);
+            });
+          }catch(err){
+            alert("Invalid backup file.");
+          }finally{
+            importInput.value="";
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      /* ---------- FIRESTORE LISTENER ---------- */
+      db.collection("videos").orderBy("createdAt","asc")
+        .onSnapshot(snap=>{
+          videos=[];
+          let latest = null;
+          snap.forEach(doc=>{
+            const d=doc.data();
+            let createdAtMs = null;
+            if(d.createdAt && d.createdAt.toDate){
+              const dt = d.createdAt.toDate();
+              createdAtMs = dt.getTime();
+              if(!latest || dt > latest) latest = dt;
+            }
+            videos.push({
+              id:doc.id,
+              brand:d.brand,
+              model:d.model,
+              title:d.title,
+              ytId:d.ytId,
+              createdAtMs
+            });
+          });
+          updateLastUpdated(latest);
+          render();
+        });
+
+      /* ---------- PWA MANIFEST + SERVICE WORKER ---------- */
+      const manifest = {
+        name: "BikeFix Hub",
+        short_name: "BikeFix",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#000000",
+        theme_color: "#111827",
+        icons: []
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
+      const manifestURL = URL.createObjectURL(manifestBlob);
+      const mlink = document.createElement("link");
+      mlink.rel = "manifest";
+      mlink.href = manifestURL;
+      document.head.appendChild(mlink);
+
+      if ("serviceWorker" in navigator) {
+        const swCode = `
+          self.addEventListener('install', e => self.skipWaiting());
+          self.addEventListener('activate', e => self.clients.claim());
+          self.addEventListener('fetch', e => {
+            if (e.request.method !== 'GET') return;
+            e.respondWith(
+              caches.open('bikefix-cache-v1').then(cache => 
+                fetch(e.request).then(resp => {
+                  cache.put(e.request, resp.clone());
+                  return resp;
+                }).catch(() => cache.match(e.request))
+              )
+            );
+          });
+        `;
+        const swBlob = new Blob([swCode], {type:"text/javascript"});
+        const swUrl = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).catch(err => console.log("SW error", err));
+      }
+
+      // remove initial focus glow
+      setTimeout(() => {
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      }, 50);
+
+      setAdminStatus();
+      applyLanguage();
     });
-  }
-};
-
-/* ---------- FIRESTORE ---------- */
-db.collection("videos").onSnapshot(s=>{
-  videos=[];
-  s.forEach(d=>videos.push({id:d.id,...d.data()}));
-  render();
-});
-
-/* ---------- ADMIN ACTIONS ---------- */
-document.addEventListener("click",e=>{
-  if(!adminUnlocked) return;
-  if(e.target.classList.contains("delete-btn")){
-    db.collection("videos").doc(e.target.dataset.id).delete();
-  }
-  if(e.target.classList.contains("edit-btn")){
-    const v=videos.find(x=>x.id===e.target.dataset.id);
-    const t=prompt("Edit title",v.title);
-    if(t) db.collection("videos").doc(v.id).update({title:t});
-  }
-});
-
-});
-</script>
+  </script>
 </body>
 </html>
