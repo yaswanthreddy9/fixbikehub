@@ -1,171 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BikeFix Hub</title>
 
 <style>
-  body { font-family: Arial, sans-serif; background:#f4f4f4; margin:0; }
-  header { background:#0f172a; color:white; padding:15px; }
-  .container { padding:20px; }
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f4f4f4;color:#222}
+header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
+.nav{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{font-size:20px;font-weight:700;cursor:pointer}
+.toolbar{display:flex;align-items:center;gap:8px}
+.search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px}
+.header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer}
 
-  .buttons { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; }
-  .btn {
-    padding:8px 14px;
-    border-radius:20px;
-    border:1px solid #ccc;
-    background:white;
-    cursor:pointer;
-  }
-  .btn.active {
-    background:#2563eb;
-    color:white;
-    border-color:#2563eb;
-  }
+.lang-strip{max-width:200px;overflow-x:auto}
+.lang-pill{padding:4px 10px;border-radius:999px;border:1px solid #666;background:#111;color:#fff;font-size:11px;cursor:pointer}
+.lang-pill.active{border-color:#facc15;box-shadow:0 0 6px #facc15}
 
-  .empty {
-    background:#e5e7eb;
-    padding:15px;
-    border-radius:8px;
-    text-align:center;
-    color:#555;
-  }
+main{max-width:1100px;margin:auto;padding:16px}
+.filters-title{margin:12px 0;font-weight:600}
+.buttons{display:flex;flex-wrap:wrap;gap:8px}
+.filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:white;cursor:pointer}
+.filter-btn.active{background:#2563eb;color:white;border-color:#0d56db}
+
+.video-grid{display:grid;gap:15px;margin-top:20px}
+.video-card{background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+iframe{width:100%;height:220px;border:none}
+.video-info{padding:10px;font-size:14px;font-weight:600}
+#empty{background:#ddd;padding:20px;border-radius:10px;margin-top:20px;text-align:center}
 </style>
 </head>
 
 <body>
-
 <header>
-  <h2>BikeFix Hub</h2>
+  <div class="nav">
+    <div class="logo" id="logo">BikeFix Hub</div>
+    <div class="toolbar">
+      <div class="search-box">
+        <input id="searchInput" placeholder="Search videos..">
+      </div>
+      <div class="lang-strip">
+        <button class="lang-pill" data-lang="en">English</button>
+        <button class="lang-pill" data-lang="hi">हिन्दी</button>
+        <button class="lang-pill" data-lang="te">తెలుగు</button>
+        <button class="lang-pill" data-lang="ta">தமிழ்</button>
+      </div>
+      <button id="userBtn" class="header-btn">👤</button>
+    </div>
+  </div>
 </header>
 
-<div class="container">
-
-  <h4>1. Choose Brand</h4>
-  <div class="buttons" id="brandButtons">
-    <button class="btn brand-btn" data-brand="hero">Hero MotoCorp</button>
-    <button class="btn brand-btn" data-brand="bajaj">Bajaj Auto</button>
-    <button class="btn brand-btn" data-brand="tvs">TVS Motor</button>
-    <button class="btn brand-btn" data-brand="royal">Royal Enfield</button>
+<main>
+  <div class="filters-title">1. Choose Brand</div>
+  <div id="brandButtons" class="buttons">
+    <button class="filter-btn" data-brand="hero">Hero MotoCorp</button>
+    <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
+    <button class="filter-btn" data-brand="tvs">TVS Motor</button>
+    <button class="filter-btn" data-brand="royal">Royal Enfield</button>
   </div>
 
-  <h4>2. Choose Model</h4>
-  <div class="buttons" id="modelButtons"></div>
+  <div class="filters-title">2. Choose Model</div>
+  <div id="modelButtons" class="buttons"></div>
 
-  <div class="empty" id="emptyBox">
-    No videos yet. Add videos using admin mode.
-  </div>
+  <div id="empty">No videos yet. Add videos using admin mode.</div>
+  <div id="videos" class="video-grid"></div>
+</main>
 
-</div>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-/* =========================
-   DATA
-========================= */
-const MODELS = {
-  hero: ["Splendor Plus","HF Deluxe","Glamour"],
-  bajaj: ["All Pulsar (General)","Pulsar 150","Pulsar NS200"],
-  tvs: ["Apache RTR 160","Raider 125"],
-  royal: ["Classic 350","Himalayan"]
+/* ---------------- FIREBASE ---------------- */
+firebase.initializeApp({
+  apiKey: "AIzaSyBU93PMVY7YKUaez3tkpiywYtIcpZTUQBw",
+  authDomain: "bike-fix-pulsar.firebaseapp.com",
+  projectId: "bike-fix-pulsar",
+  storageBucket: "bike-fix-pulsar.firebasestorage.app",
+  messagingSenderId: "464082773378",
+  appId: "1:464082773378:web:6376c2ddd5635fd2061b9b"
+});
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+/* ---------------- DATA ---------------- */
+const models = {
+  hero:["Splendor Plus","HF Deluxe","Glamour"],
+  bajaj:["All Pulsar (General)","Pulsar 150","Pulsar NS200"],
+  tvs:["Apache RTR 160","Raider 125"],
+  royal:["Classic 350","Himalayan 450"]
 };
 
-const DEFAULT_BRAND = "hero";
+let activeBrand = "hero";
+let activeModel = null;
+let videos = [];
+let currentUser = null;
 
-/* =========================
-   STATE (single source)
-========================= */
-let activeBrand = localStorage.getItem("activeBrand") || DEFAULT_BRAND;
-let activeModel = localStorage.getItem("activeModel") || null;
-
-/* =========================
-   ELEMENTS
-========================= */
-const brandButtons = document.querySelectorAll(".brand-btn");
-const modelContainer = document.getElementById("modelButtons");
-
-/* =========================
-   HELPERS
-========================= */
-function clearBrandActive() {
-  brandButtons.forEach(b => b.classList.remove("active"));
+/* ---------------- STATE INIT (FIX) ---------------- */
+function initBrandState(){
+  const stored = localStorage.getItem("lastBrand");
+  if(stored && models[stored]) activeBrand = stored;
 }
 
-function clearModelActive() {
-  document.querySelectorAll(".model-btn")
-    .forEach(b => b.classList.remove("active"));
-}
-
-/* =========================
-   APPLY STATE
-========================= */
-function applyActiveBrand() {
-  clearBrandActive();
-  const btn = document.querySelector(
-    `.brand-btn[data-brand="${activeBrand}"]`
-  );
-  if (btn) btn.classList.add("active");
-}
-
-function applyActiveModel() {
-  clearModelActive();
-  if (!activeModel) return;
-
-  const btn = document.querySelector(
-    `.model-btn[data-model="${activeModel}"]`
-  );
-  if (btn) btn.classList.add("active");
-}
-
-/* =========================
-   LOAD MODELS
-========================= */
-function loadModels(brand) {
-  modelContainer.innerHTML = "";
-  activeModel = localStorage.getItem("activeModel");
-
-  MODELS[brand].forEach(model => {
-    const btn = document.createElement("button");
-    btn.className = "btn model-btn";
-    btn.textContent = model;
-    btn.dataset.model = model;
-
-    btn.onclick = () => {
-      activeModel = model;
-      localStorage.setItem("activeModel", model);
-      applyActiveModel();
-    };
-
-    modelContainer.appendChild(btn);
+function applyBrandUI(){
+  document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.brand === activeBrand);
   });
-
-  applyActiveModel();
 }
 
-/* =========================
-   EVENTS
-========================= */
-brandButtons.forEach(btn => {
-  btn.onclick = () => {
-    activeBrand = btn.dataset.brand;
-    localStorage.setItem("activeBrand", activeBrand);
-    localStorage.removeItem("activeModel");
-    activeModel = null;
+/* ---------------- MODELS ---------------- */
+function loadModels(preferred){
+  const box = document.getElementById("modelButtons");
+  box.innerHTML="";
+  const list = models[activeBrand] || [];
+  activeModel = preferred && list.includes(preferred) ? preferred : list[0];
 
-    applyActiveBrand();
-    loadModels(activeBrand);
+  list.forEach(m=>{
+    const b=document.createElement("button");
+    b.className="filter-btn"+(m===activeModel?" active":"");
+    b.textContent=m;
+    b.onclick=()=>{
+      document.querySelectorAll("#modelButtons .filter-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      activeModel=m;
+      savePrefs();
+      render();
+    };
+    box.appendChild(b);
+  });
+}
+
+/* ---------------- SAVE PREFS ---------------- */
+function savePrefs(){
+  localStorage.setItem("lastBrand",activeBrand);
+  localStorage.setItem("lastModel",activeModel||"");
+  if(currentUser){
+    db.collection("userPrefs").doc(currentUser.uid)
+      .set({lastBrand:activeBrand,lastModel:activeModel},{merge:true});
+  }
+}
+
+/* ---------------- LOAD USER PREFS ---------------- */
+function loadUserPrefs(uid){
+  db.collection("userPrefs").doc(uid).get().then(doc=>{
+    if(doc.exists){
+      const d=doc.data();
+      if(d.lastBrand && models[d.lastBrand]){
+        activeBrand=d.lastBrand;
+        applyBrandUI();
+        loadModels(d.lastModel);
+        render();
+      }
+    }
+  });
+}
+
+/* ---------------- RENDER ---------------- */
+function render(){
+  const grid=document.getElementById("videos");
+  grid.innerHTML="";
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  videos.forEach(v=>{
+    if(v.brand!==activeBrand||v.model!==activeModel) return;
+    if(!v.title.toLowerCase().includes(q)) return;
+    const c=document.createElement("div");
+    c.className="video-card";
+    c.innerHTML=`
+      <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
+      <div class="video-info">${v.title}</div>`;
+    grid.appendChild(c);
+  });
+  document.getElementById("empty").style.display = grid.children.length?"none":"block";
+}
+
+/* ---------------- BRAND CLICK ---------------- */
+document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    activeBrand=btn.dataset.brand;
+    localStorage.removeItem("lastModel");
+    applyBrandUI();
+    loadModels(null);
+    savePrefs();
+    render();
   };
 });
 
-/* =========================
-   INIT (IMPORTANT ORDER)
-========================= */
-window.addEventListener("DOMContentLoaded", () => {
-  applyActiveBrand();
-  loadModels(activeBrand);
+/* ---------------- AUTH ---------------- */
+auth.onAuthStateChanged(user=>{
+  currentUser=user;
+  if(user) loadUserPrefs(user.uid);
 });
-</script>
 
+/* ---------------- FIRESTORE ---------------- */
+db.collection("videos").onSnapshot(snap=>{
+  videos=[];
+  snap.forEach(d=>videos.push({id:d.id,...d.data()}));
+  render();
+});
+
+/* ---------------- INIT ---------------- */
+initBrandState();
+applyBrandUI();
+loadModels(localStorage.getItem("lastModel"));
+render();
+</script>
 </body>
 </html>
-
