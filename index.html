@@ -301,7 +301,7 @@
 
     <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
     <div id="brandButtons" class="buttons">
-      <button class="filter-btn active" data-brand="hero">Hero MotoCorp</button>
+      <button class="filter-btn" data-brand="hero">Hero MotoCorp</button>
       <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
       <button class="filter-btn" data-brand="tvs">TVS Motor</button>
       <button class="filter-btn" data-brand="royal">Royal Enfield</button>
@@ -587,8 +587,12 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
           .replace("youtube.com/shorts/","")
           .split(/[?&]/)[0];
       }
-
-      function render(){
+      function applyBrandUI() {
+  document.querySelectorAll("#brandButtons .filter-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.brand === activeBrand);
+  });
+}
+  function render(){
         videoGrid.innerHTML = "";
         const q = search.value.toLowerCase();
 
@@ -654,20 +658,24 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         saveLastState();
       }
 
-      function loadUserPrefs(uid){
-        db.collection("userPrefs").doc(uid).get()
-          .then(doc=>{
-            if(doc.exists){
-              const d = doc.data();
-              const brand = d.lastBrand;
-              const model = d.lastModel;
-              if(brand && models[brand]){
-                setBrandAndModel(brand, model || null);
-              }
-            }
-          })
-          .catch(err=>console.log("userPrefs load error", err));
+     function loadUserPrefs(uid){
+  db.collection("userPrefs").doc(uid).get()
+    .then(doc=>{
+      if(!doc.exists) return;
+
+      const d = doc.data();
+      if(d.lastBrand && models[d.lastBrand]){
+        activeBrand = d.lastBrand;
+        localStorage.setItem("lastBrand", activeBrand);
+
+        applyBrandUI();
+        loadModels(d.lastModel || null);
+        render();
       }
+    })
+    .catch(err=>console.log("userPrefs load error", err));
+}
+
 
       /* ---------- VIEW TABS ---------- */
       document.querySelectorAll(".view-tab").forEach(tab=>{
@@ -711,24 +719,32 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
         saveLastState();
       }
 
-      const storedBrand = localStorage.getItem("lastBrand");
-      if (storedBrand && models[storedBrand]) {
-        activeBrand = storedBrand;
-      }
-      loadModels(null);
+      function initBrandState() {
+  const stored = localStorage.getItem("lastBrand");
+  if (stored && models[stored]) {
+    activeBrand = stored;
+  } else {
+    activeBrand = "hero";
+  }
+}
+
+initBrandState();
+applyBrandUI();
+loadModels(null);
+
 
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
-      brandButtons.forEach(btn=>{
-        if(btn.dataset.brand === activeBrand) btn.classList.add("active");
-        btn.addEventListener("click", ()=>{
-          brandButtons.forEach(x=>x.classList.remove("active"));
-          btn.classList.add("active");
-          activeBrand=btn.dataset.brand;
-          loadModels(null);
-          render();
-        });
-      });
+     brandButtons.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    activeBrand = btn.dataset.brand;
+    localStorage.setItem("lastBrand", activeBrand);
+    localStorage.removeItem("lastModel");
 
+    applyBrandUI();
+    loadModels(null);
+    render();
+  });
+});
       // Search
       search.oninput=render;
 
@@ -1228,3 +1244,4 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
   </script>
 </body>
 </html>
+
