@@ -1,35 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>BikeFix Hub</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{background:#f4f4f4;color:#222}
+
+/* remove focus glow */
+button:focus,input:focus,select:focus,textarea:focus{outline:none;box-shadow:none}
+
+/* header */
 header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
-.nav{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
 .logo{font-size:20px;font-weight:700;cursor:pointer}
 .toolbar{display:flex;align-items:center;gap:8px}
-.search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px}
-.header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer}
 
-.lang-strip{max-width:200px;overflow-x:auto}
-.lang-pill{padding:4px 10px;border-radius:999px;border:1px solid #666;background:#111;color:#fff;font-size:11px;cursor:pointer}
-.lang-pill.active{border-color:#facc15;box-shadow:0 0 6px #facc15}
+/* buttons */
+.header-btn{background:#111;border:1px solid #666;color:white;padding:6px 10px;border-radius:50px;cursor:pointer;font-size:18px}
+.search-box input{padding:8px 12px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px}
 
+/* layout */
 main{max-width:1100px;margin:auto;padding:16px}
-.filters-title{margin:12px 0;font-weight:600}
+.filters-title{font-size:14px;margin:10px 0;color:#444;font-weight:600}
 .buttons{display:flex;flex-wrap:wrap;gap:8px}
-.filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:white;cursor:pointer}
-.filter-btn.active{background:#2563eb;color:white;border-color:#0d56db}
+.filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:#fff;cursor:pointer;font-size:14px}
+.filter-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
 
+/* videos */
 .video-grid{display:grid;gap:15px;margin-top:20px}
-.video-card{background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.video-card{background:#fff;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
 iframe{width:100%;height:220px;border:none}
-.video-info{padding:10px;font-size:14px;font-weight:600}
-#empty{background:#ddd;padding:20px;border-radius:10px;margin-top:20px;text-align:center}
+.video-info{padding:10px;font-weight:600;font-size:14px}
+.video-meta{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:#555}
+
+/* empty */
+#empty{background:#ddd;text-align:center;padding:20px;border-radius:10px;margin-top:20px;color:#444}
+
+/* admin */
+.admin-actions button{border:none;padding:4px 6px;border-radius:5px;font-size:11px;color:white;cursor:pointer}
+.edit-btn{background:#f59e0b}
+.delete-btn{background:#ef4444}
+
+/* dark mode */
+body.dark{background:#0f0f0f;color:#fff}
+body.dark header{background:#000}
+body.dark .filter-btn{background:#1a1a1a;color:#fff;border-color:#333}
+body.dark .filter-btn.active{background:#2563eb}
+body.dark .video-card{background:#1a1a1a}
+body.dark #empty{background:#333;color:#bbb}
+
+/* mobile */
+@media(max-width:600px){
+  .search-box input{width:100%}
+}
 </style>
 </head>
 
@@ -39,14 +65,9 @@ iframe{width:100%;height:220px;border:none}
     <div class="logo" id="logo">BikeFix Hub</div>
     <div class="toolbar">
       <div class="search-box">
-        <input id="searchInput" placeholder="Search videos..">
+        <input id="searchInput" placeholder="Search videos.." />
       </div>
-      <div class="lang-strip">
-        <button class="lang-pill" data-lang="en">English</button>
-        <button class="lang-pill" data-lang="hi">हिन्दी</button>
-        <button class="lang-pill" data-lang="te">తెలుగు</button>
-        <button class="lang-pill" data-lang="ta">தமிழ்</button>
-      </div>
+      <button id="darkToggle" class="header-btn">🌙</button>
       <button id="userBtn" class="header-btn">👤</button>
     </div>
   </div>
@@ -64,7 +85,7 @@ iframe{width:100%;height:220px;border:none}
   <div class="filters-title">2. Choose Model</div>
   <div id="modelButtons" class="buttons"></div>
 
-  <div id="empty">No videos yet. Add videos using admin mode.</div>
+  <div id="empty">No videos yet.</div>
   <div id="videos" class="video-grid"></div>
 </main>
 
@@ -74,49 +95,51 @@ iframe{width:100%;height:220px;border:none}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-/* ---------------- FIREBASE ---------------- */
-firebase.initializeApp({
-  apiKey: "AIzaSyBU93PMVY7YKUaez3tkpiywYtIcpZTUQBw",
-  authDomain: "bike-fix-pulsar.firebaseapp.com",
-  projectId: "bike-fix-pulsar",
-  storageBucket: "bike-fix-pulsar.firebasestorage.app",
-  messagingSenderId: "464082773378",
-  appId: "1:464082773378:web:6376c2ddd5635fd2061b9b"
-});
-const db = firebase.firestore();
-const auth = firebase.auth();
+document.addEventListener("DOMContentLoaded",()=>{
 
-/* ---------------- DATA ---------------- */
-const models = {
-  hero:["Splendor Plus","HF Deluxe","Glamour"],
-  bajaj:["All Pulsar (General)","Pulsar 150","Pulsar NS200"],
-  tvs:["Apache RTR 160","Raider 125"],
-  royal:["Classic 350","Himalayan 450"]
+/* ---------- FIREBASE ---------- */
+firebase.initializeApp({
+  apiKey:"AIzaSyBU93PMVY7YKUaez3tkpiywYtIcpZTUQBw",
+  authDomain:"bike-fix-pulsar.firebaseapp.com",
+  projectId:"bike-fix-pulsar"
+});
+const db=firebase.firestore();
+const auth=firebase.auth();
+const provider=new firebase.auth.GoogleAuthProvider();
+const ADMIN_EMAIL="myeswanthreddy321@gmail.com";
+
+/* ---------- DATA ---------- */
+const models={
+  hero:["Splendor Plus","HF Deluxe","Glamour","Passion Plus","Xtreme 160R","Xpulse 200 4V","Karizma XMR","Mavrick 440"],
+  bajaj:["Pulsar 150","Pulsar NS200","Pulsar 220F","Dominar 400"],
+  tvs:["Apache RTR 160","Raider 125","Ronin"],
+  royal:["Classic 350","Himalayan 450","Hunter 350"]
 };
 
-let activeBrand = "hero";
-let activeModel = null;
-let videos = [];
-let currentUser = null;
+let activeBrand="hero";
+let activeModel=null;
+let adminUnlocked=false;
+let videos=[];
 
-/* ---------------- STATE INIT (FIX) ---------------- */
-function initBrandState(){
-  const stored = localStorage.getItem("lastBrand");
-  if(stored && models[stored]) activeBrand = stored;
+/* ---------- HELPERS ---------- */
+function extractId(url){
+  return url.replace(/^https?:\/\//,"")
+            .replace("youtu.be/","")
+            .replace("youtube.com/watch?v=","")
+            .split(/[?&]/)[0];
 }
 
 function applyBrandUI(){
-  document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.brand === activeBrand);
-  });
+  document.querySelectorAll("#brandButtons .filter-btn")
+    .forEach(b=>b.classList.toggle("active",b.dataset.brand===activeBrand));
 }
 
-/* ---------------- MODELS ---------------- */
-function loadModels(preferred){
-  const box = document.getElementById("modelButtons");
+/* ---------- MODELS ---------- */
+function loadModels(pref){
+  const box=document.getElementById("modelButtons");
   box.innerHTML="";
-  const list = models[activeBrand] || [];
-  activeModel = preferred && list.includes(preferred) ? preferred : list[0];
+  const list=models[activeBrand];
+  activeModel=pref&&list.includes(pref)?pref:list[0];
 
   list.forEach(m=>{
     const b=document.createElement("button");
@@ -133,79 +156,103 @@ function loadModels(preferred){
   });
 }
 
-/* ---------------- SAVE PREFS ---------------- */
-function savePrefs(){
-  localStorage.setItem("lastBrand",activeBrand);
-  localStorage.setItem("lastModel",activeModel||"");
-  if(currentUser){
-    db.collection("userPrefs").doc(currentUser.uid)
-      .set({lastBrand:activeBrand,lastModel:activeModel},{merge:true});
-  }
-}
-
-/* ---------------- LOAD USER PREFS ---------------- */
-function loadUserPrefs(uid){
-  db.collection("userPrefs").doc(uid).get().then(doc=>{
-    if(doc.exists){
-      const d=doc.data();
-      if(d.lastBrand && models[d.lastBrand]){
-        activeBrand=d.lastBrand;
-        applyBrandUI();
-        loadModels(d.lastModel);
-        render();
-      }
-    }
-  });
-}
-
-/* ---------------- RENDER ---------------- */
+/* ---------- RENDER ---------- */
 function render(){
+  const q=document.getElementById("searchInput").value.toLowerCase();
   const grid=document.getElementById("videos");
   grid.innerHTML="";
-  const q=document.getElementById("searchInput").value.toLowerCase();
+  let count=0;
+
   videos.forEach(v=>{
-    if(v.brand!==activeBrand||v.model!==activeModel) return;
-    if(!v.title.toLowerCase().includes(q)) return;
-    const c=document.createElement("div");
-    c.className="video-card";
-    c.innerHTML=`
+    if(v.brand!==activeBrand||v.model!==activeModel||!v.title.toLowerCase().includes(q)) return;
+    count++;
+    const card=document.createElement("div");
+    card.className="video-card";
+    card.innerHTML=`
       <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
-      <div class="video-info">${v.title}</div>`;
-    grid.appendChild(c);
+      <div class="video-info">${v.title}
+        <div class="video-meta">
+          <span>${v.brand} • ${v.model}</span>
+          ${adminUnlocked?`<span>
+            <button class="edit-btn" data-id="${v.id}">Edit</button>
+            <button class="delete-btn" data-id="${v.id}">Delete</button>
+          </span>`:""}
+        </div>
+      </div>`;
+    grid.appendChild(card);
   });
-  document.getElementById("empty").style.display = grid.children.length?"none":"block";
+  document.getElementById("empty").style.display=count? "none":"block";
 }
 
-/* ---------------- BRAND CLICK ---------------- */
+/* ---------- PREFS ---------- */
+function savePrefs(){
+  localStorage.setItem("lastBrand",activeBrand);
+  localStorage.setItem("lastModel",activeModel);
+}
+
+/* ---------- INIT ---------- */
+const lb=localStorage.getItem("lastBrand");
+if(lb&&models[lb]) activeBrand=lb;
+applyBrandUI();
+loadModels(localStorage.getItem("lastModel"));
+
+/* ---------- BRAND CLICK ---------- */
 document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
   btn.onclick=()=>{
     activeBrand=btn.dataset.brand;
     localStorage.removeItem("lastModel");
     applyBrandUI();
     loadModels(null);
-    savePrefs();
     render();
   };
 });
 
-/* ---------------- AUTH ---------------- */
-auth.onAuthStateChanged(user=>{
-  currentUser=user;
-  if(user) loadUserPrefs(user.uid);
-});
+/* ---------- SEARCH ---------- */
+document.getElementById("searchInput").oninput=render;
 
-/* ---------------- FIRESTORE ---------------- */
-db.collection("videos").onSnapshot(snap=>{
+/* ---------- DARK MODE ---------- */
+document.getElementById("darkToggle").onclick=()=>{
+  document.body.classList.toggle("dark");
+};
+
+/* ---------- SECRET ADMIN ---------- */
+let clicks=0,timer=null;
+document.getElementById("logo").onclick=()=>{
+  clicks++;
+  if(clicks===1) timer=setTimeout(()=>clicks=0,2000);
+  if(clicks>=5){
+    clearTimeout(timer);clicks=0;
+    auth.signInWithPopup(provider).then(r=>{
+      if(r.user.email===ADMIN_EMAIL){
+        adminUnlocked=true;
+        alert("Admin unlocked");
+        render();
+      }else auth.signOut();
+    });
+  }
+};
+
+/* ---------- FIRESTORE ---------- */
+db.collection("videos").onSnapshot(s=>{
   videos=[];
-  snap.forEach(d=>videos.push({id:d.id,...d.data()}));
+  s.forEach(d=>videos.push({id:d.id,...d.data()}));
   render();
 });
 
-/* ---------------- INIT ---------------- */
-initBrandState();
-applyBrandUI();
-loadModels(localStorage.getItem("lastModel"));
-render();
+/* ---------- ADMIN ACTIONS ---------- */
+document.addEventListener("click",e=>{
+  if(!adminUnlocked) return;
+  if(e.target.classList.contains("delete-btn")){
+    db.collection("videos").doc(e.target.dataset.id).delete();
+  }
+  if(e.target.classList.contains("edit-btn")){
+    const v=videos.find(x=>x.id===e.target.dataset.id);
+    const t=prompt("Edit title",v.title);
+    if(t) db.collection("videos").doc(v.id).update({title:t});
+  }
+});
+
+});
 </script>
 </body>
 </html>
