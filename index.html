@@ -514,11 +514,7 @@ body.dark .skeleton::after {
   </div>
 
   <main>
-    <!-- Announcement Bar -->
-<!-- <div id="announcementBar">
-  <div id="announcementText">
-    🔧 Welcome to BikeFix Hub — Stay tuned for updates!
-  </div> -->
+  
 </div>
     <div class="top-meta">
          
@@ -1154,7 +1150,7 @@ loadModels(null);
         adminUnlocked = true;
         setAdminStatus();
         document.body.classList.add("admin-ready");
-        openAdminPanel();
+        // openAdminPanel();
         alert("Admin login success");
         render();
       }
@@ -1233,19 +1229,6 @@ loadModels(null);
       };
 auth.onAuthStateChanged((user) => {
 
-  // 🔔 ANNOUNCEMENT READ (SAFE)
-  db.collection("settings")
-    .doc("announcement")
-    .onSnapshot(doc => {
-      if (doc.exists && doc.data().text) {
-        announcementText.textContent = doc.data().text;
-        announcementBar.style.display = "block";
-      } else {
-        announcementBar.style.display = "none";
-      }
-    }, err => {
-      console.error("Announcement read error:", err);
-    });
 
   if (user) {
     currentUserUid = user.uid;
@@ -1587,6 +1570,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
