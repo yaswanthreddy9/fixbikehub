@@ -639,7 +639,6 @@ body.dark .skeleton::after {
       const provider = new firebase.auth.GoogleAuthProvider();
 
       const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
-
 /* ---------- ANNOUNCEMENT READ ---------- */
 const announcementBar = document.getElementById("announcementBar");
 const announcementText = document.getElementById("announcementText");
@@ -655,6 +654,33 @@ db.collection("settings").doc("announcement")
   }, err => {
     console.error("Announcement read error:", err);
   });
+
+      
+/* ---------- ANNOUNCEMENT SAVE (ADMIN) ---------- */
+const saveAnnouncementBtn = document.getElementById("saveAnnouncementBtn");
+const adminAnnouncement = document.getElementById("adminAnnouncement");
+
+if (saveAnnouncementBtn) {
+  saveAnnouncementBtn.onclick = () => {
+    if (!adminUnlocked) {
+      alert("Login as admin first");
+      return;
+    }
+
+    const text = adminAnnouncement.value.trim();
+
+    db.collection("settings")
+      .doc("announcement")
+      .set({ text }, { merge: true })
+      .then(() => {
+        alert("Announcement saved successfully");
+      })
+      .catch(err => {
+        console.error("Announcement save error:", err);
+        alert("Error saving announcement");
+      });
+  };
+}
 
 
 
@@ -1535,4 +1561,5 @@ loadModels(null);
   </script>
 </body>
 </html>
+
 
