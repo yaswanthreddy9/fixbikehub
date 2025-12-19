@@ -19,7 +19,10 @@
     }
 
     header{background:#111827;color:#fff;padding:12px;position:sticky;top:0;z-index:10}
-    .nav{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:1100px;margin:auto;flex-wrap:wrap}
+    .nav{display:flex;align-items:center;justify-content:space-between;
+        max-width:none;        /* 🔴 remove centering */
+         margin-left:24px;     /* 🔴 push content to left */
+        margin-right:24px;flex-wrap:wrap}
     .logo{font-size:20px;font-weight:700;cursor:pointer}
     .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
     .search-box input{padding:8px 10px;border-radius:50px;border:1px solid #555;background:#000;color:#fff;width:220px;font-size:14px}
@@ -46,7 +49,10 @@
       display:none;
     }
 
-    main{max-width:1100px;margin:auto;padding:16px}
+    main{ max-width:none;        /* 🔴 remove center lock */
+          margin-left:24px;     /* 🔴 align left */
+          margin-right:24px;
+          padding:16px}
     .filters-title{font-size:14px;margin:10px 0;color:#444;font-weight:600}
     .buttons{display:flex;flex-wrap:wrap;gap:8px}
     .filter-btn{padding:8px 15px;border-radius:50px;border:1px solid #aaa;background:white;cursor:pointer;font-size:14px}
@@ -58,8 +64,11 @@
     .view-tab.active{background:#111827;color:#fff;border-color:#111827}
     .last-updated{font-size:11px;color:#666}
 
-    .video-grid{display:grid;gap:15px;margin-top:20px;}
-    .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);overflow:hidden}
+    .video-grid{display:grid;gap:15px;margin-top:20px;
+    width: calc(100vw - 420px); /* 🔴 controls right limit */
+  max-width: 100%;
+}
+    .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);  width: 100%;overflow:hidden}
     iframe{width:100%;height:220px;border:none}
     .video-info{padding:10px;font-size:14px;font-weight:600}
     .video-meta{margin-top:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:#555}
@@ -138,6 +147,33 @@
     .side-section-title{font-size:12px;margin-bottom:4px;color:#e5e7eb}
     .side-user-action{margin-top:4px;font-size:12px;color:#e5e7eb;text-decoration:underline;cursor:pointer}
 
+
+/* ---- ANNOUNCEMENT TICKER ---- */
+#announcementBar{
+  background: #facc15; /* yellow */
+  color: #000;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 10px 0 14px 0;
+  padding: 8px 0;
+  position: relative;
+}
+
+#announcementText{
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  animation: scrollAnnouncement 15s linear infinite;
+}
+
+@keyframes scrollAnnouncement {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+
     /* ---- LOGIN MODAL ---- */
     .modal-backdrop{
       position:fixed;
@@ -190,7 +226,6 @@
     body.dark #adminPanel button{background:#16a34a}
     body.dark #adminToggleBtn{background:#2563eb}
     body.dark .modal{background:#111827;color:#f9fafb}
-
 
     
 
@@ -373,6 +408,13 @@ body.dark .skeleton::after {
   }
 }
 
+@media (max-width: 600px) {
+  .nav,
+  main {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
 
 
   </style>
@@ -466,13 +508,22 @@ body.dark .skeleton::after {
   </div>
 
   <main>
+    <!-- Announcement Bar -->
+<div id="announcementBar">
+  <div id="announcementText">
+    🔧 Welcome to BikeFix Hub — Stay tuned for updates!
+  </div>
+</div>
     <div class="top-meta">
+         
       <div class="view-tabs">
+       
         <button class="view-tab active" data-view="bike" id="tabByBike">By Bike</button>
         <button class="view-tab" data-view="all" id="tabAllVideos">All Videos</button>
       </div>
       <div class="last-updated" id="lastUpdated"></div>
     </div>
+
 
     <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
     <div id="brandButtons" class="buttons">
@@ -499,6 +550,14 @@ body.dark .skeleton::after {
   <!-- Admin Panel Sidebar -->
   <div id="adminPanel">
     <div style="display:flex;align-items:center;gap:8px;">
+        <hr style="margin:10px 0">
+
+<label>Announcement Text</label>
+<textarea id="adminAnnouncement" rows="2"
+  placeholder="Enter announcement message..."></textarea>
+
+<button id="saveAnnouncementBtn">Save Announcement</button>
+
       <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
       <button id="adminClose" title="Close">✕</button>
     </div>
@@ -566,6 +625,31 @@ NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
       const provider = new firebase.auth.GoogleAuthProvider();
 
       const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
+
+// announcement
+      document.getElementById("saveAnnouncementBtn").onclick = () => {
+  if (!adminUnlocked) {
+    alert("Admin only");
+    return;
+  }
+
+  const text = document.getElementById("adminAnnouncement").value.trim();
+  if (!text) {
+    alert("Enter announcement text");
+    return;
+  }
+
+  db.collection("siteConfig").doc("announcement").set({
+    text,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>{
+    alert("Announcement updated!");
+  }).catch(err=>{
+    alert("Error saving announcement");
+    console.error(err);
+  });
+};
+
 
       /* ------------ MODEL DATA ------------ */
       const models = {
@@ -1381,6 +1465,17 @@ loadModels(null);
           updateLastUpdated(latest);
           render();
         });
+
+        db.collection("siteConfig").doc("announcement")
+  .onSnapshot(doc=>{
+    if (!doc.exists) return;
+    const data = doc.data();
+    const el = document.getElementById("announcementText");
+    if (el && data.text) {
+      el.textContent = "📢 " + data.text;
+    }
+  });
+
 
       /* ---------- PWA MANIFEST + SERVICE WORKER ---------- */
       const manifest = {
