@@ -658,8 +658,9 @@ body.dark .skeleton::after {
       const db = firebase.firestore();
       const auth = firebase.auth();
       const provider = new firebase.auth.GoogleAuthProvider();
-
-      const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
+      let adminUnlocked = false;
+      let currentUserUid = null;
+       const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
 
 // announcement
       document.getElementById("saveAnnouncementBtn").onclick = () => {
@@ -696,7 +697,7 @@ body.dark .skeleton::after {
 
       let activeBrand = "hero";
       let activeModel = null;
-      let adminUnlocked = false;
+      
       let currentUserUid = null;
       let videos = [];
       let latestUpdated = null;
@@ -1563,4 +1564,5 @@ loadModels(null);
   </script>
 </body>
 </html>
+
 
