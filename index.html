@@ -1231,27 +1231,42 @@ auth.onAuthStateChanged((user) => {
   if (user) {
     currentUserUid = user.uid;
 
+    const email = user.email || "User";
+
+    // 🔹 USER UI
+    sideUserStatus.textContent = "Logged in as: " + email;
+    sideUserAction.textContent = "Logout?";
+    logoutTextBtn.style.display = "inline";
+
     // Load user preferences
     loadUserPrefs(currentUserUid);
 
-    // ADMIN CHECK
-    if (user.email === ADMIN_EMAIL) {
+    // 🔹 ADMIN CHECK
+    if (email === ADMIN_EMAIL) {
       adminUnlocked = true;
       document.body.classList.add("admin-ready");
-      setAdminStatus();
     } else {
       adminUnlocked = false;
       document.body.classList.remove("admin-ready", "admin-open");
-      setAdminStatus();
     }
 
+    setAdminStatus();
+    closeLoginModal();
+
   } else {
-    // FULL LOGOUT STATE
+    // 🔻 FULL LOGOUT STATE
     currentUserUid = null;
     adminUnlocked = false;
 
+    // USER UI RESET
+    sideUserStatus.textContent = "Not logged in";
+    sideUserAction.textContent = "Login?";
+    logoutTextBtn.style.display = "none";
+
+    // ADMIN UI RESET
     document.body.classList.remove("admin-ready", "admin-open");
     setAdminStatus();
+    closeLoginModal();
   }
 });
 
@@ -1522,7 +1537,7 @@ auth.onAuthStateChanged((user) => {
 
     const data = doc.data();
     if (data.text && data.text.trim()) {
-      announcementText.textContent = + data.text;
+      announcementText.textContent = data.text;
       announcementBar.style.display = "block";
     } else {
       announcementBar.style.display = "none";
@@ -1583,6 +1598,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
