@@ -547,16 +547,36 @@ body.dark .skeleton::after {
     <div id="videos" class="video-grid"></div>
   </main>
 
-  <!-- Admin Panel Sidebar -->
+  <!-- Admin Panel Sidebar
   <div id="adminPanel">
     <div style="display:flex;align-items:center;gap:8px;">
-        <hr style="margin:10px 0">
+        <hr style="margin:10px 0"> -->
 
-<label>Announcement Text</label>
-<textarea id="adminAnnouncement" rows="2"
-  placeholder="Enter announcement message..."></textarea>
+<!-- Admin Panel Sidebar -->
+<div id="adminPanel">
 
-<button id="saveAnnouncementBtn">Save Announcement</button>
+  <!-- HEADER ROW (flex is OK here) -->
+  <div style="display:flex;align-items:center;gap:8px;">
+    <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
+    <button id="adminClose" title="Close">✕</button>
+  </div>
+
+  <hr style="margin:10px 0">
+
+  <!-- ANNOUNCEMENT SECTION (NOT FLEX) -->
+  <label>Announcement Text</label>
+  <textarea
+    id="adminAnnouncement"
+    rows="2"
+    placeholder="Enter announcement message...">
+  </textarea>
+
+  <button id="saveAnnouncementBtn">Save Announcement</button>
+
+  <hr style="margin:16px 0">
+
+  <!-- ADD VIDEO FORM CONTINUES BELOW -->
+
 
       <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
       <button id="adminClose" title="Close">✕</button>
