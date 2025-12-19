@@ -453,6 +453,12 @@ body.dark .skeleton::after {
     </div>
   </header>
 
+  <!-- 🔔 Announcement Bar -->
+<div id="announcementBar" style="display:none;">
+  <div id="announcementText"></div>
+</div>
+
+
   <!-- Side menu for mobile -->
   <div id="sideBackdrop" class="side-backdrop"></div>
   <div id="sideMenu" class="side-menu">
@@ -509,10 +515,10 @@ body.dark .skeleton::after {
 
   <main>
     <!-- Announcement Bar -->
-<div id="announcementBar">
+<!-- <div id="announcementBar">
   <div id="announcementText">
     🔧 Welcome to BikeFix Hub — Stay tuned for updates!
-  </div>
+  </div> -->
 </div>
     <div class="top-meta">
          
@@ -641,6 +647,9 @@ body.dark .skeleton::after {
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+const announcementBar = document.getElementById("announcementBar");
+const announcementText = document.getElementById("announcementText");
+      
         document.getElementById("videos").style.display = "none";
 
 
@@ -1578,6 +1587,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
