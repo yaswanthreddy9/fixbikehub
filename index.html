@@ -1228,28 +1228,33 @@ loadModels(null);
         else openLoginModal();
       };
 auth.onAuthStateChanged((user) => {
-
-
   if (user) {
     currentUserUid = user.uid;
 
-    // load userPrefs ONLY after auth
+    // Load user preferences
     loadUserPrefs(currentUserUid);
 
-    // admin auto-unlock (optional)
+    // ADMIN CHECK
     if (user.email === ADMIN_EMAIL) {
       adminUnlocked = true;
       document.body.classList.add("admin-ready");
       setAdminStatus();
+    } else {
+      adminUnlocked = false;
+      document.body.classList.remove("admin-ready", "admin-open");
+      setAdminStatus();
     }
 
   } else {
+    // FULL LOGOUT STATE
     currentUserUid = null;
     adminUnlocked = false;
-    document.body.classList.remove("admin-ready","admin-open");
+
+    document.body.classList.remove("admin-ready", "admin-open");
     setAdminStatus();
   }
 });
+
 
 
       /* ---------- ADD VIDEO (requires admin) ---------- */
@@ -1517,7 +1522,7 @@ auth.onAuthStateChanged((user) => {
 
     const data = doc.data();
     if (data.text && data.text.trim()) {
-      announcementText.textContent = "📢 " + data.text;
+      announcementText.textContent = + data.text;
       announcementBar.style.display = "block";
     } else {
       announcementBar.style.display = "none";
@@ -1578,6 +1583,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
