@@ -547,57 +547,92 @@ body.dark .skeleton::after {
     <div id="videos" class="video-grid"></div>
   </main>
 
-  <!-- Admin Panel Sidebar -->
-  <div id="adminPanel">
-    <div style="display:flex;align-items:center;gap:8px;">
-        <hr style="margin:10px 0">
+<!-- Admin Panel Sidebar -->
+<div id="adminPanel">
 
-<label>Announcement Text</label>
-<textarea id="adminAnnouncement" rows="2"
-  placeholder="Enter announcement message..."></textarea>
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <h3 data-i18n="addVideoTitle" style="margin:0;">Admin Panel</h3>
+    <button id="adminClose" title="Close">✕</button>
+  </div>
 
-<button id="saveAnnouncementBtn">Save Announcement</button>
+  <hr style="margin:10px 0">
 
-      <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
-      <button id="adminClose" title="Close">✕</button>
-    </div>
-    <div id="adminNote" style="margin-top:6px;">
-      <span data-i18n="adminStatusLabel">Admin status:</span>
-      <b id="adminStatus">Not logged in</b>
-    </div>
+  <!-- ANNOUNCEMENT SECTION -->
+  <label><b>Announcement Text</b></label>
+  <textarea
+    id="adminAnnouncement"
+    rows="2"
+    placeholder="Enter announcement message...">
+  </textarea>
 
-    <label data-i18n="brandLabel">Brand</label>
-    <select id="adminBrand"></select>
+  <button
+    id="saveAnnouncementBtn"
+    style="margin-top:6px;">
+    Save Announcement
+  </button>
 
-    <label data-i18n="modelLabel">Model</label>
-    <select id="adminModel"></select>
+  <hr style="margin:16px 0">
 
-    <label data-i18n="videoTitleLabel">Video Title</label>
-    <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
+  <!-- ADMIN STATUS -->
+  <div id="adminNote">
+    <span data-i18n="adminStatusLabel">Admin status:</span>
+    <b id="adminStatus">Not logged in</b>
+  </div>
 
-    <label data-i18n="youtubeLabel">YouTube URL or ID</label>
-    <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
+  <hr style="margin:10px 0">
 
-    <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
-      🔍 Get Title from YouTube
+  <!-- ADD VIDEO (UNCHANGED OLD LOGIC) -->
+  <label data-i18n="brandLabel">Brand</label>
+  <select id="adminBrand"></select>
+
+  <label data-i18n="modelLabel">Model</label>
+  <select id="adminModel"></select>
+
+  <label data-i18n="videoTitleLabel">Video Title</label>
+  <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
+
+  <label data-i18n="youtubeLabel">YouTube URL or ID</label>
+  <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
+
+  <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
+    🔍 Get Title from YouTube
+  </button>
+
+  <button id="addVideoBtn" data-i18n="addVideoButton">
+    Add Video
+  </button>
+
+  <!-- BULK ADD -->
+  <h4 style="margin-top:16px;font-size:13px;">
+    Bulk Add (Title | URL per line)
+  </h4>
+
+  <textarea
+    id="bulkInput"
+    rows="4"
+    placeholder="Pulsar 150 clutch | https://youtu.be/xxxx">
+  </textarea>
+
+  <button id="bulkAddBtn" type="button">Add Bulk</button>
+
+  <!-- BACKUP -->
+  <div id="backupRow" style="margin-top:12px;">
+    <button id="exportBtn" type="button" data-i18n="exportBackup">
+      Export Backup
     </button>
 
-    <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
+    <label for="importInput" data-i18n="importBackup">
+      Import Backup
+      <input id="importInput" type="file" accept="application/json" />
+    </label>
 
-    <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
-    <textarea id="bulkInput" rows="4" placeholder="Example:
-Pulsar 150 clutch | https://youtu.be/xxxx
-NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
-    <button id="bulkAddBtn" type="button">Add Bulk</button>
-
-    <div id="backupRow">
-      <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
-      <label for="importInput" data-i18n="importBackup">Import Backup
-        <input id="importInput" type="file" accept="application/json" />
-      </label>
-      <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
-    </div>
+    <button id="logoutBtn" type="button" data-i18n="logout">
+      Logout
+    </button>
   </div>
+
+</div>
 
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1528,3 +1563,4 @@ loadModels(null);
   </script>
 </body>
 </html>
+
