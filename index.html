@@ -1508,14 +1508,22 @@ auth.onAuthStateChanged((user) => {
           render();
         });
 
-        db.collection("siteConfig").doc("announcement")
-  .onSnapshot(doc=>{
-    if (!doc.exists) return;
-    const data = doc.data();
-    const el = document.getElementById("announcementText");
-    if (el && data.text) {
-      el.textContent = "📢 " + data.text;
+     db.collection("siteConfig").doc("announcement")
+  .onSnapshot(doc => {
+    if (!doc.exists) {
+      announcementBar.style.display = "none";
+      return;
     }
+
+    const data = doc.data();
+    if (data.text && data.text.trim()) {
+      announcementText.textContent = "📢 " + data.text;
+      announcementBar.style.display = "block";
+    } else {
+      announcementBar.style.display = "none";
+    }
+  }, err => {
+    console.error("Announcement read error:", err);
   });
 
 
@@ -1570,6 +1578,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
