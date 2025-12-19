@@ -554,25 +554,38 @@ body.dark .skeleton::after {
 
   <!-- HEADER -->
   <div style="display:flex;align-items:center;justify-content:space-between;">
-    <h3 data-i18n="addVideoTitle" style="margin:0;">Admin Panel</h3>
+    <h3 style="margin:0;">Admin Panel</h3>
     <button id="adminClose" title="Close">✕</button>
   </div>
 
   <hr style="margin:10px 0">
 
-  <!-- ANNOUNCEMENT SECTION -->
-  <label><b>Announcement Text</b></label>
-  <textarea
-    id="adminAnnouncement"
-    rows="2"
-    placeholder="Enter announcement message...">
-  </textarea>
+ <!-- ANNOUNCEMENT COLLAPSIBLE -->
+<div id="announcementAdminBox">
 
-  <button
-    id="saveAnnouncementBtn"
-    style="margin-top:6px;">
-    Save Announcement
-  </button>
+  <div id="announcementToggle"
+       style="cursor:pointer;font-weight:bold;font-size:13px;
+              display:flex;justify-content:space-between;align-items:center;">
+    Latest Update!
+    <span id="announcementArrow">▸</span>
+  </div>
+
+  <div id="announcementBody" style="display:none;margin-top:8px;">
+    <label>Announcement Text</label>
+
+    <textarea
+      id="adminAnnouncement"
+      rows="2"
+      placeholder="Enter announcement message...">
+    </textarea>
+
+    <button id="saveAnnouncementBtn" style="margin-top:6px;">
+      Save Announcement
+    </button>
+  </div>
+
+</div>
+
 
   <hr style="margin:16px 0">
 
@@ -583,9 +596,15 @@ body.dark .skeleton::after {
   </div>
 <h3
   data-i18n="addVideoTitle"
-  style="margin:12px 0 6px 0; font-size:14px;">
+  style="
+    margin:14px 0 8px 0;
+    font-size:14px;
+    border-bottom:1px solid #ccc;
+    padding-bottom:4px;
+  ">
   Add Video
 </h3>
+
   
 
   <!-- ADD VIDEO (UNCHANGED OLD LOGIC) -->
@@ -651,6 +670,18 @@ const announcementBar = document.getElementById("announcementBar");
 const announcementText = document.getElementById("announcementText");
       
         document.getElementById("videos").style.display = "none";
+// ---------- ANNOUNCEMENT COLLAPSE ----------
+const announcementToggle = document.getElementById("announcementToggle");
+const announcementBody = document.getElementById("announcementBody");
+const announcementArrow = document.getElementById("announcementArrow");
+
+if (announcementToggle) {
+  announcementToggle.onclick = () => {
+    const open = announcementBody.style.display === "block";
+    announcementBody.style.display = open ? "none" : "block";
+    announcementArrow.textContent = open ? "▸" : "▾";
+  };
+}
 
 
       /* ------------ FIREBASE CONFIG ------------ */
@@ -1602,6 +1633,7 @@ auth.onAuthStateChanged((user) => {
   </script>
 </body>
 </html>
+
 
 
 
