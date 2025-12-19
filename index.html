@@ -1221,7 +1221,7 @@ loadModels(null);
         else openLoginModal();
       };
 
-      auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged((user) => {
   if (user) {
     currentUserUid = user.uid;
     const email = user.email || "";
@@ -1246,7 +1246,7 @@ loadModels(null);
     closeLoginModal();
   }
 });
-;
+
 
       /* ---------- ADD VIDEO (requires admin) ---------- */
       document.getElementById("addVideoBtn").onclick=()=>{
@@ -1566,6 +1566,7 @@ loadModels(null);
   </script>
 </body>
 </html>
+
 
 
 
