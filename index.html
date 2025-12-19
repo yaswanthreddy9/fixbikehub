@@ -1224,35 +1224,29 @@ loadModels(null);
       auth.onAuthStateChanged((user) => {
   if (user) {
     currentUserUid = user.uid;
+    const email = user.email || "";
 
-    // ✅ restore admin on refresh
-    if (user.email === ADMIN_EMAIL) {
+    // ✅ ADMIN CHECK (THIS WAS MISSING)
+    if (email === ADMIN_EMAIL) {
       adminUnlocked = true;
       document.body.classList.add("admin-ready");
-      setAdminStatus();
+    } else {
+      adminUnlocked = false;
+      document.body.classList.remove("admin-ready","admin-open");
     }
 
-    sideUserStatus.textContent = "Logged in as: " + (user.email || "User");
-    sideUserAction.textContent = "Logout?";
-    logoutTextBtn.style.display = "inline";
-
+    setAdminStatus();
     loadUserPrefs(currentUserUid);
     closeLoginModal();
   } else {
     currentUserUid = null;
     adminUnlocked = false;
-
-    document.body.classList.remove("admin-ready", "admin-open");
     setAdminStatus();
-
-    sideUserStatus.textContent = "Not logged in";
-    sideUserAction.textContent = "Login?";
-    logoutTextBtn.style.display = "none";
-
-    render();
+    document.body.classList.remove("admin-ready","admin-open");
     closeLoginModal();
   }
 });
+;
 
       /* ---------- ADD VIDEO (requires admin) ---------- */
       document.getElementById("addVideoBtn").onclick=()=>{
@@ -1572,6 +1566,7 @@ loadModels(null);
   </script>
 </body>
 </html>
+
 
 
 
