@@ -542,54 +542,76 @@ body.dark .skeleton::after {
   <div class="skeleton-card"></div>
 </div>
 
+
     <div id="empty" data-i18n="noVideos">No videos yet.</div>
     <div id="videos" class="video-grid"></div>
   </main>
 
-  <!-- Admin Panel Sidebar -->
-  <div id="adminPanel">
-    <div style="display:flex;align-items:center;gap:8px;">
-     <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
-      <button id="adminClose" title="Close">✕</button>
-    </div>
-    <hr style="margin:10px 0">
-    <div id="adminNote" style="margin-top:6px;">
-      <span data-i18n="adminStatusLabel">Admin status:</span>
-      <b id="adminStatus">Not logged in</b>
-    </div>
+<!-- Admin Panel Sidebar -->
+<div id="adminPanel">
 
-    <label data-i18n="brandLabel">Brand</label>
-    <select id="adminBrand"></select>
-
-    <label data-i18n="modelLabel">Model</label>
-    <select id="adminModel"></select>
-
-    <label data-i18n="videoTitleLabel">Video Title</label>
-    <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
-
-    <label data-i18n="youtubeLabel">YouTube URL or ID</label>
-    <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
-
-    <button id="fetchTitleBtn" type="button" style="margin-top:6px;font-size:12px;">
-      🔍 Get Title from YouTube
-    </button>
-
-    <button id="addVideoBtn" data-i18n="addVideoButton">Add Video</button>
-
-    <h4 style="margin-top:16px;font-size:13px;">Bulk Add (Title | URL per line)</h4>
-    <textarea id="bulkInput" rows="4" placeholder="Example:
-Pulsar 150 clutch | https://youtu.be/xxxx
-NS200 engine work | https://www.youtube.com/watch?v=yyyy"></textarea>
-    <button id="bulkAddBtn" type="button">Add Bulk</button>
-
-    <div id="backupRow">
-      <button id="exportBtn" type="button" data-i18n="exportBackup">Export Backup</button>
-      <label for="importInput" data-i18n="importBackup">Import Backup
-        <input id="importInput" type="file" accept="application/json" />
-      </label>
-      <button id="logoutBtn" type="button" data-i18n="logout">Logout</button>
-    </div>
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;gap:8px;">
+    <h3 style="margin:0;" data-i18n="addVideoTitle">Add Video</h3>
+    <button id="adminClose" title="Close">✕</button>
   </div>
+
+  <hr style="margin:10px 0">
+
+  <!-- ANNOUNCEMENT -->
+  <label>Announcement Text</label>
+  <textarea
+    id="adminAnnouncement"
+    rows="2"
+    placeholder="Enter announcement message...">
+  </textarea>
+
+  <button id="saveAnnouncementBtn">Save Announcement</button>
+
+  <hr style="margin:16px 0">
+
+  <!-- ADMIN STATUS -->
+  <div id="adminNote">
+    <span>Admin status:</span>
+    <b id="adminStatus">Not logged in</b>
+  </div>
+
+  <!-- BRAND -->
+  <label>Brand</label>
+  <select id="adminBrand"></select>
+
+  <!-- MODEL -->
+  <label>Model</label>
+  <select id="adminModel"></select>
+
+  <!-- TITLE -->
+  <label>Video Title</label>
+  <input id="adminTitle" placeholder="Ex: Pulsar 150 Clutch Repair" />
+
+  <!-- URL -->
+  <label>YouTube URL or ID</label>
+  <input id="adminUrl" placeholder="https://youtube.com/watch?v=xxxx" />
+
+  <button id="fetchTitleBtn">🔍 Get Title from YouTube</button>
+  <button id="addVideoBtn">Add Video</button>
+
+  <!-- BULK -->
+  <h4>Bulk Add (Title | URL per line)</h4>
+  <textarea id="bulkInput" rows="4"></textarea>
+  <button id="bulkAddBtn">Add Bulk</button>
+
+  <!-- BACKUP -->
+  <div id="backupRow">
+    <button id="exportBtn">Export Backup</button>
+    <label>
+      Import Backup
+      <input id="importInput" type="file" accept="application/json">
+    </label>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+</div>
+
 
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1520,4 +1542,3 @@ loadModels(null);
   </script>
 </body>
 </html>
-
