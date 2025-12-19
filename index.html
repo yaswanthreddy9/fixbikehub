@@ -640,29 +640,22 @@ body.dark .skeleton::after {
 
       const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
 
-// announcement
-      document.getElementById("saveAnnouncementBtn").onclick = () => {
-  if (!adminUnlocked) {
-    alert("Admin only");
-    return;
-  }
+/* ---------- ANNOUNCEMENT READ ---------- */
+const announcementBar = document.getElementById("announcementBar");
+const announcementText = document.getElementById("announcementText");
 
-  const text = document.getElementById("adminAnnouncement").value.trim();
-  if (!text) {
-    alert("Enter announcement text");
-    return;
-  }
-
-  db.collection("siteConfig").doc("announcement").set({
-    text,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(()=>{
-    alert("Announcement updated!");
-  }).catch(err=>{
-    alert("Error saving announcement");
-    console.error(err);
+db.collection("settings").doc("announcement")
+  .onSnapshot(doc => {
+    if (doc.exists && doc.data().text) {
+      announcementText.textContent = doc.data().text;
+      announcementBar.style.display = "block";
+    } else {
+      announcementBar.style.display = "none";
+    }
+  }, err => {
+    console.error("Announcement read error:", err);
   });
-};
+
 
 
       /* ------------ MODEL DATA ------------ */
@@ -1542,3 +1535,4 @@ loadModels(null);
   </script>
 </body>
 </html>
+
