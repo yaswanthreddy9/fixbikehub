@@ -1207,29 +1207,32 @@ addAnnouncementBtn.onclick = () => {
       activeModel = m;
     }
 
-    btn.onclick = () => {
-      document
-        .querySelectorAll("#modelButtons .filter-btn")
-        .forEach(b => b.classList.remove("active"));
+   btn.onclick = () => {
+  document
+    .querySelectorAll("#modelButtons .filter-btn")
+    .forEach(b => b.classList.remove("active"));
 
-      btn.classList.add("active");
-      activeModel = m;
-      saveLastState();
+  btn.classList.add("active");
+  activeModel = m;
+  saveLastState();
 
-      // 📱 Mobile: go to videos
-      if (isMobile()) {
-        document.body.className = "m-video-only";
-        document.getElementById("crumbBrand").textContent = activeBrand.toUpperCase();
-        document.getElementById("crumbModel").textContent = activeModel;
-      }
+  viewMode = "bike"; // 🔒 keep logic consistent
 
-      render();
-    };
+  // 📱 Mobile: go to videos
+  if (isMobile()) {
+    document.body.className = "m-video-only";
 
-    modelArea.appendChild(btn);
-  });
-}
+    const cb = document.getElementById("crumbBrand");
+    const cm = document.getElementById("crumbModel");
 
+    if (cb && cm) {
+      cb.textContent = activeBrand.toUpperCase();
+      cm.textContent = activeModel;
+    }
+  }
+
+  render();
+};
 
  
 
@@ -1257,16 +1260,21 @@ loadModels(null);
 
 
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
-   brandButtons.forEach(btn=>{
+ brandButtons.forEach(btn=>{
   btn.onclick = ()=>{
     activeBrand = btn.dataset.brand;
+    activeModel = null;
+
     localStorage.setItem("lastBrand", activeBrand);
     localStorage.removeItem("lastModel");
 
     applyBrandUI();
     loadModels(null);
 
- 
+    // 📱 Mobile: go to MODEL step
+    if (isMobile()) {
+      document.body.className = "m-model-only";
+    }
 
     render();
   };
@@ -1908,6 +1916,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
