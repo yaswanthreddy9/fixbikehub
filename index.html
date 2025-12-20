@@ -320,6 +320,7 @@
     /* 📱 MOBILE STEP FLOW */
 @media (max-width: 600px) {
 
+  /* STEP 1: BRAND */
   body.m-brand-only #modelSection,
   body.m-brand-only #videos,
   body.m-brand-only #empty,
@@ -327,26 +328,32 @@
     display: none;
   }
 
+  /* STEP 2: MODEL */
   body.m-model-only #brandSection,
   body.m-model-only #videos,
   body.m-model-only #empty {
     display: none;
   }
 
+  /* STEP 3: VIDEOS */
   body.m-video-only #brandSection,
   body.m-video-only #modelSection {
     display: none;
   }
-  body.m-video-only #videos,
-body.m-video-only #empty {
-  display: grid !important;
-}
 
+  body.m-video-only #videos {
+    display: grid;
+  }
+
+  body.m-video-only #empty {
+    display: block;
+  }
 
   #mobileBreadcrumb {
     display: flex;
   }
 }
+
 
 
     /* ---- LOADING SKELETONS ---- */
@@ -803,7 +810,7 @@ const announcementBar = document.getElementById("announcementBar");
 const announcementText = document.getElementById("announcementText");
       // const adminAnnouncement = document.getElementById("adminAnnouncement");
 
-        document.getElementById("videos").style.display = "none";
+        // document.getElementById("videos").style.display = "none";
 // ---------- ANNOUNCEMENT COLLAPSE ----------
 const announcementToggle = document.getElementById("announcementToggle");
 const announcementBody = document.getElementById("announcementBody");
@@ -1093,44 +1100,50 @@ addAnnouncementBtn.onclick = () => {
     btn.classList.toggle("active", btn.dataset.brand === activeBrand);
   });
 }
-  function render(){
-        videoGrid.innerHTML = "";
-        const q = search.value.toLowerCase();
+ function render() {
+  videoGrid.innerHTML = "";
+  const q = search.value.toLowerCase();
 
-        videos.forEach(v=>{
-          let visible = true;
-          if (viewMode === "bike") {
-            visible = (v.brand === activeBrand &&
-                       v.model === activeModel &&
-                       v.title.toLowerCase().includes(q));
-          } else {
-            visible = v.title.toLowerCase().includes(q);
-          }
-          if(!visible) return;
+  videos.forEach(v => {
+    let visible = true;
 
-          const card=document.createElement("div");
-          card.className="video-card";
-          card.dataset.id = v.id;
+    if (viewMode === "bike") {
+      visible =
+        v.brand === activeBrand &&
+        (!activeModel || v.model === activeModel) &&
+        v.title.toLowerCase().includes(q);
+    } else {
+      visible = v.title.toLowerCase().includes(q);
+    }
 
-          const adminBtns = adminUnlocked ? `
-            <div class="admin-actions">
-              <button class="edit-btn" data-id="${v.id}">Edit</button>
-              <button class="delete-btn" data-id="${v.id}">Delete</button>
-            </div>` : "";
+    if (!visible) return;
 
-          card.innerHTML=`
-            <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
-            <div class="video-info">
-              ${v.title}
-              <div class="video-meta">
-                <span>${v.brand.toUpperCase()} • ${v.model}</span>
-                ${adminBtns}
-              </div>
-            </div>
-          `;
-          card.style.animationDelay = `${videoGrid.children.length * 40}ms`;
-          videoGrid.appendChild(card);
-        });
+    const card = document.createElement("div");
+    card.className = "video-card";
+    card.dataset.id = v.id;
+
+    const adminBtns = adminUnlocked ? `
+      <div class="admin-actions">
+        <button class="edit-btn" data-id="${v.id}">Edit</button>
+        <button class="delete-btn" data-id="${v.id}">Delete</button>
+      </div>` : "";
+
+    card.innerHTML = `
+      <iframe src="https://www.youtube.com/embed/${v.ytId}" allowfullscreen></iframe>
+      <div class="video-info">
+        ${v.title}
+        <div class="video-meta">
+          <span>${v.brand.toUpperCase()} • ${v.model}</span>
+          ${adminBtns}
+        </div>
+      </div>
+    `;
+
+    card.style.animationDelay = `${videoGrid.children.length * 40}ms`;
+    videoGrid.appendChild(card);
+  });
+}
+
 
         // empty.style.display = videoGrid.children.length===0 ? "block" : "none";
 const hasVideos = videoGrid.children.length > 0;
@@ -1766,7 +1779,7 @@ auth.onAuthStateChanged((user) => {
       db.collection("videos").orderBy("createdAt","asc")
       .onSnapshot(snap=>{
        document.getElementById("skeletons").style.display = "none";
-        document.getElementById("videos").style.display = "grid";
+        // document.getElementById("videos").style.display = "grid";
 
            videos=[];
           let latest = null;
@@ -1956,6 +1969,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
