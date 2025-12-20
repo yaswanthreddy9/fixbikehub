@@ -1139,30 +1139,31 @@ addAnnouncementBtn.onclick = () => {
       </div>
     `;
 
-    card.style.animationDelay = `${videoGrid.children.length * 40}ms`;
     videoGrid.appendChild(card);
   });
+
+  /* ✅ EMPTY STATE HANDLING */
+  const hasVideos = videoGrid.children.length > 0;
+
+  if (!isMobile()) {
+    empty.style.display = hasVideos ? "none" : "block";
+    return;
+  }
+
+  if (document.body.classList.contains("m-video-only")) {
+    empty.style.display = hasVideos ? "none" : "block";
+  } else {
+    empty.style.display = "none";
+  }
 }
+
 
 
         // empty.style.display = videoGrid.children.length===0 ? "block" : "none";
-const hasVideos = videoGrid.children.length > 0;
 
-// Desktop logic unchanged
-if (!isMobile()) {
-  empty.style.display = hasVideos ? "none" : "block";
-  return;
-}
-
-// 📱 Mobile logic
-if (document.body.classList.contains("m-video-only")) {
-  empty.style.display = hasVideos ? "none" : "block";
-} else {
-  empty.style.display = "none";
-}
 
     
-      }
+      
 
       /* ---------- SAVE / LOAD LAST STATE ---------- */
       function saveLastState(){
@@ -1969,6 +1970,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
