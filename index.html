@@ -1060,13 +1060,19 @@ addAnnouncementBtn.onclick = () => {
 
   videos.forEach(v => {
     let visible = true;
+if (viewMode === "bike") {
+  // No model selected → show nothing
+  if (!activeModel) {
+    visible = false;
+  } else {
+    visible =
+      v.brand === activeBrand &&
+      v.model === activeModel &&
+      v.title.toLowerCase().includes(q);
+  }
+}
 
-    if (viewMode === "bike") {
-      visible =
-        v.brand === activeBrand &&
-        (!activeModel || v.model === activeModel) &&
-        v.title.toLowerCase().includes(q);
-    } else {
+ else {
       visible = v.title.toLowerCase().includes(q);
     }
 
@@ -1876,6 +1882,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
