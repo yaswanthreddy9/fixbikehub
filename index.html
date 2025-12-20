@@ -1183,7 +1183,7 @@ addAnnouncementBtn.onclick = () => {
       });
 
       /* ---------- MODELS & BRAND ---------- */
-   function loadModels(preferredModel){
+ function loadModels(preferredModel) {
   const modelArea = document.getElementById("modelButtons");
   modelArea.innerHTML = "";
 
@@ -1207,32 +1207,37 @@ addAnnouncementBtn.onclick = () => {
       activeModel = m;
     }
 
-   btn.onclick = () => {
-  document
-    .querySelectorAll("#modelButtons .filter-btn")
-    .forEach(b => b.classList.remove("active"));
+    btn.onclick = () => {
+      document
+        .querySelectorAll("#modelButtons .filter-btn")
+        .forEach(b => b.classList.remove("active"));
 
-  btn.classList.add("active");
-  activeModel = m;
-  saveLastState();
+      btn.classList.add("active");
+      activeModel = m;
+      saveLastState();
 
-  viewMode = "bike"; // 🔒 keep logic consistent
+      viewMode = "bike";
 
-  // 📱 Mobile: go to videos
-  if (isMobile()) {
-    document.body.className = "m-video-only";
+      // 📱 Mobile: go to videos
+      if (isMobile()) {
+        document.body.className = "m-video-only";
 
-    const cb = document.getElementById("crumbBrand");
-    const cm = document.getElementById("crumbModel");
+        const cb = document.getElementById("crumbBrand");
+        const cm = document.getElementById("crumbModel");
 
-    if (cb && cm) {
-      cb.textContent = activeBrand.toUpperCase();
-      cm.textContent = activeModel;
-    }
-  }
+        if (cb && cm) {
+          cb.textContent = activeBrand.toUpperCase();
+          cm.textContent = activeModel;
+        }
+      }
 
-  render();
-};
+      render();
+    };
+
+    
+    modelArea.appendChild(btn);
+  });
+}
 
  
 
@@ -1916,6 +1921,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
