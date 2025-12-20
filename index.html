@@ -767,12 +767,7 @@ function scrollToVideos() {
   });
 }
 
-function showModelSection(show) {
-  const modelSection = document.getElementById("modelSection");
-  if (!modelSection) return;
 
-  modelSection.style.display = show ? "block" : "none";
-}
 
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -1213,8 +1208,6 @@ function loadModels(preferredModel) {
 
   render();
 
-  // ✅ Collapse model section
-  showModelSection(false);
 
   // ✅ Auto-scroll to videos
   setTimeout(scrollToVideos, 120);
@@ -1253,7 +1246,7 @@ loadModels(savedModel); // ✅ IMPORTANT
 render();
 
       // Initial state
-showModelSection(!activeModel);
+// showModelSection(!activeModel);
 
 //  if (isMobile()) {
 //   if (localStorage.getItem("lastModel")) {
@@ -1277,8 +1270,6 @@ brandButtons.forEach(btn => {
     applyBrandUI();
     loadModels(null);
 
-    // 🔹 SHOW model again
-    showModelSection(true);
 
     render();
   };
@@ -1921,6 +1912,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
