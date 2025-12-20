@@ -64,9 +64,13 @@
     .view-tab.active{background:#111827;color:#fff;border-color:#111827}
     .last-updated{font-size:11px;color:#666}
 
-    .video-grid{display:grid;gap:15px;margin-top:20px;
-    width: calc(100vw - 420px); /* 🔴 controls right limit */
-  max-width: 100%;
+  .video-grid{
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  width: 100%;
+}
+
 }
     .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);  width: 100%;overflow:hidden}
     iframe{width:100%;height:220px;border:none}
@@ -332,6 +336,37 @@ body.dark .skeleton-card {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }
 }
+/* COLOUN LAYOUT */
+/* 📱 Mobile */
+@media (max-width: 600px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 📱 Tablet */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 🖥 Desktop */
+@media (min-width: 1025px) {
+  .video-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 🖥 Large screens */
+@media (min-width: 1440px) {
+  .video-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
+    
 /* ===============================
    SKELETON SHIMMER 
    =============================== */
@@ -1763,6 +1798,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
