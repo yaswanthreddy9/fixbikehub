@@ -691,7 +691,8 @@ body.dark .skeleton::after {
     document.addEventListener("DOMContentLoaded", function () {
 const announcementBar = document.getElementById("announcementBar");
 const announcementText = document.getElementById("announcementText");
-      
+      const adminAnnouncement = document.getElementById("adminAnnouncement");
+
         document.getElementById("videos").style.display = "none";
 // ---------- ANNOUNCEMENT COLLAPSE ----------
 const announcementToggle = document.getElementById("announcementToggle");
@@ -707,15 +708,13 @@ if (announcementToggle) {
 }
 // ANOUNCEMENT CLOSE
 const announcementClose = document.getElementById("announcementClose");
-
-announcementClose.onclick = ()=>{
-  localStorage.setItem("hideAnnouncement","1");
-  announcementBar.style.display = "none";
-};
-
-if(localStorage.getItem("hideAnnouncement")){
-  announcementBar.style.display = "none";
+if (announcementClose) {
+  announcementClose.onclick = () => {
+    localStorage.setItem("hideAnnouncement", "1");
+    announcementBar.style.display = "none";
+  };
 }
+
 
       
 
@@ -1702,6 +1701,7 @@ db.collection("siteConfig").doc("announcements")
   </script>
 </body>
 </html>
+
 
 
 
