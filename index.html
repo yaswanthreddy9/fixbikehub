@@ -309,51 +309,7 @@
       .mobile-only{display:inline-flex}
     }
 
-    @media (max-width: 600px) {
-  body.m-video-only #empty {
-    margin-top: 10px;
-  }
-}
-
-
-
-    /* 📱 MOBILE STEP FLOW */
-@media (max-width: 600px) {
-
-  /* STEP 1: BRAND */
-  body.m-brand-only #modelSection,
-  body.m-brand-only #videos,
-  body.m-brand-only #empty,
-  body.m-brand-only #mobileBreadcrumb {
-    display: none;
-  }
-
-  /* STEP 2: MODEL */
-  body.m-model-only #brandSection,
-  body.m-model-only #videos,
-  body.m-model-only #empty {
-    display: none;
-  }
-
-  /* STEP 3: VIDEOS */
-  body.m-video-only #brandSection,
-  body.m-video-only #modelSection {
-    display: none;
-  }
-
-  body.m-video-only #videos {
-    display: grid;
-  }
-
-  body.m-video-only #empty {
-    display: block;
-  }
-
-  #mobileBreadcrumb {
-    display: flex;
-  }
-}
-
+   
 
 
     /* ---- LOADING SKELETONS ---- */
@@ -801,9 +757,7 @@ body.dark .skeleton::after {
   return window.innerWidth <= 600;
 }
 
-if (isMobile()) {
-  document.body.className = "m-brand-only";
-}
+
 
     document.addEventListener("DOMContentLoaded", function () {
 const announcementBar = document.getElementById("announcementBar");
@@ -1150,12 +1104,8 @@ addAnnouncementBtn.onclick = () => {
     return;
   }
 
-  if (document.body.classList.contains("m-video-only")) {
-    empty.style.display = hasVideos ? "none" : "block";
-  } else {
-    empty.style.display = "none";
-  }
-}
+ empty.style.display = videoGrid.children.length ? "none" : "block";
+
 
 
 
@@ -1220,7 +1170,7 @@ addAnnouncementBtn.onclick = () => {
       });
 
       /* ---------- MODELS & BRAND ---------- */
- function loadModels(preferredModel) {
+function loadModels(preferredModel) {
   const modelArea = document.getElementById("modelButtons");
   modelArea.innerHTML = "";
 
@@ -1234,15 +1184,14 @@ addAnnouncementBtn.onclick = () => {
     initialModel = storedModel;
   }
 
+  activeModel = initialModel;
+
   allModels.forEach(m => {
     const btn = document.createElement("button");
     btn.className = "filter-btn";
     btn.textContent = m;
 
-    if (m === initialModel) {
-      btn.classList.add("active");
-      activeModel = m;
-    }
+    if (m === initialModel) btn.classList.add("active");
 
     btn.onclick = () => {
       document
@@ -1251,31 +1200,18 @@ addAnnouncementBtn.onclick = () => {
 
       btn.classList.add("active");
       activeModel = m;
-      saveLastState();
 
-      viewMode = "bike";
-
-      // 📱 Mobile: go to videos
-      if (isMobile()) {
-        document.body.className = "m-video-only";
-
-        const cb = document.getElementById("crumbBrand");
-        const cm = document.getElementById("crumbModel");
-
-        if (cb && cm) {
-          cb.textContent = activeBrand.toUpperCase();
-          cm.textContent = activeModel;
-        }
-      }
-
+      localStorage.setItem("lastModel", m);
       render();
     };
 
-    
     modelArea.appendChild(btn);
   });
 }
 
+
+      // 📱 Mobile: go to videos
+    
  
 
       function initBrandState() {
@@ -1290,20 +1226,19 @@ addAnnouncementBtn.onclick = () => {
 initBrandState();
 applyBrandUI();
 loadModels(null);
- if (isMobile()) {
-  if (localStorage.getItem("lastModel")) {
-    document.body.className = "m-video-only";
-  } else if (localStorage.getItem("lastBrand")) {
-    document.body.className = "m-model-only";
-  } else {
-    document.body.className = "m-brand-only";
-  }
-}
+//  if (isMobile()) {
+//   if (localStorage.getItem("lastModel")) {
+//     document.body.className = "m-video-only";
+//   } else if (localStorage.getItem("lastBrand")) {
+//   } 
+// }
 
 
-      const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
- brandButtons.forEach(btn=>{
-  btn.onclick = ()=>{
+    
+const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
+
+brandButtons.forEach(btn => {
+  btn.onclick = () => {
     activeBrand = btn.dataset.brand;
     activeModel = null;
 
@@ -1312,15 +1247,13 @@ loadModels(null);
 
     applyBrandUI();
     loadModels(null);
-
-    // 📱 Mobile: go to MODEL step
-    if (isMobile()) {
-      document.body.className = "m-model-only";
-    }
-
     render();
   };
 });
+
+
+    // 📱 Mobile: go to MODEL step
+   
 
       // Search
       search.oninput=render;
@@ -1765,15 +1698,7 @@ auth.onAuthStateChanged((user) => {
         reader.readAsText(file);
       };
 // Reset mobile flow
-      document.getElementById("crumbBrand").onclick = ()=>{
-  if (!isMobile()) return;
-
-  activeModel = null;
-  localStorage.removeItem("lastModel");
-
-  document.body.className = "m-brand-only";
-  render();
-};
+    
 
 
       /* ---------- FIRESTORE LISTENER ---------- */
@@ -1806,15 +1731,7 @@ auth.onAuthStateChanged((user) => {
           render();
 
         // 📱 Ensure correct mobile state after videos load
-if (isMobile()) {
-  if (localStorage.getItem("lastModel")) {
-    document.body.className = "m-video-only";
-  } else if (localStorage.getItem("lastBrand")) {
-    document.body.className = "m-model-only";
-  } else {
-    document.body.className = "m-brand-only";
-  }
-}
+
 
         });
 let announcementIndex = 0;
@@ -1970,6 +1887,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
