@@ -737,7 +737,8 @@ if (announcementClose) {
        const ADMIN_EMAIL = "myeswanthreddy321@gmail.com";
 
 // announcement SAVE
-   const addAnnouncementBtn = document.getElementById("addAnnouncementBtn");
+const addAnnouncementBtn = document.getElementById("addAnnouncementBtn");
+const adminAnnouncement = document.getElementById("adminAnnouncement");
 
 addAnnouncementBtn.onclick = () => {
   if (!adminUnlocked) {
@@ -755,19 +756,19 @@ addAnnouncementBtn.onclick = () => {
     .set({
       items: firebase.firestore.FieldValue.arrayUnion({
         id: Date.now().toString(),
-        text,
+        text: text,
         start: null,
         end: null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: Date.now() // ✅ SAFE
       })
     }, { merge: true })
     .then(() => {
       adminAnnouncement.value = "";
-      alert("Announcement added to list");
+      alert("Announcement saved");
     })
     .catch(err => {
-      console.error(err);
-      alert("Error adding announcement");
+      console.error("Announcement save failed:", err);
+      alert(err.message);
     });
 };
 
@@ -1701,6 +1702,7 @@ db.collection("siteConfig").doc("announcements")
   </script>
 </body>
 </html>
+
 
 
 
