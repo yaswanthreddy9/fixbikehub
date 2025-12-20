@@ -757,6 +757,22 @@ body.dark .skeleton::after {
   return window.innerWidth <= 600;
 }
 
+function scrollToVideos() {
+  const videos = document.getElementById("videos");
+  if (!videos) return;
+
+  videos.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function showModelSection(show) {
+  const modelSection = document.getElementById("modelSection");
+  if (!modelSection) return;
+
+  modelSection.style.display = show ? "block" : "none";
+}
 
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -1188,17 +1204,25 @@ function loadModels(preferredModel) {
 
     if (m === initialModel) btn.classList.add("active");
 
-    btn.onclick = () => {
-      document
-        .querySelectorAll("#modelButtons .filter-btn")
-        .forEach(b => b.classList.remove("active"));
+  btn.onclick = () => {
+  document
+    .querySelectorAll("#modelButtons .filter-btn")
+    .forEach(b => b.classList.remove("active"));
 
-      btn.classList.add("active");
-      activeModel = m;
+  btn.classList.add("active");
+  activeModel = m;
 
-      localStorage.setItem("lastModel", m);
-      render();
-    };
+  localStorage.setItem("lastModel", m);
+
+  render();
+
+  // ✅ Collapse model section
+  showModelSection(false);
+
+  // ✅ Auto-scroll to videos
+  setTimeout(scrollToVideos, 120);
+};
+
 
     modelArea.appendChild(btn);
   });
@@ -1221,6 +1245,9 @@ function loadModels(preferredModel) {
 initBrandState();
 applyBrandUI();
 loadModels(null);
+      // Initial state
+showModelSection(!activeModel);
+
 //  if (isMobile()) {
 //   if (localStorage.getItem("lastModel")) {
 //     document.body.className = "m-video-only";
@@ -1242,9 +1269,14 @@ brandButtons.forEach(btn => {
 
     applyBrandUI();
     loadModels(null);
+
+    // 🔹 SHOW model again
+    showModelSection(true);
+
     render();
   };
 });
+
 
 
     // 📱 Mobile: go to MODEL step
@@ -1882,6 +1914,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
