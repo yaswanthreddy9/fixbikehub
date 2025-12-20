@@ -1106,7 +1106,7 @@ addAnnouncementBtn.onclick = () => {
 
  empty.style.display = videoGrid.children.length ? "none" : "block";
 
-
+ }
 
 
         // empty.style.display = videoGrid.children.length===0 ? "block" : "none";
@@ -1127,18 +1127,7 @@ addAnnouncementBtn.onclick = () => {
         }
       }
 
-      function setBrandAndModel(brand, model){
-        if(!models[brand]) return;
-        activeBrand = brand;
-
-        document.querySelectorAll("#brandButtons .filter-btn").forEach(btn=>{
-          btn.classList.toggle("active", btn.dataset.brand === brand);
-        });
-
-        loadModels(model);
-        render();
-        saveLastState();
-      }
+     
 
      function loadUserPrefs(uid){
   db.collection("userPrefs").doc(uid).get()
@@ -1887,6 +1876,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
