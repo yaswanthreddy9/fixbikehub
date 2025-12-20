@@ -71,7 +71,7 @@
   width: 100%;
 }
 
-}
+
     .video-card{background:white;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);  width: 100%;overflow:hidden}
     iframe{width:100%;height:220px;border:none}
     .video-info{padding:10px;font-size:14px;font-weight:600}
@@ -619,7 +619,7 @@ body.dark .skeleton::after {
 
    <!-- BRAND SECTION -->
 <div id="brandSection">
-  <div class="filters-title">1. Choose Brand</div>
+ <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
   <div id="brandButtons" class="buttons">
     <!-- existing brand buttons stay here -->
 
@@ -634,7 +634,7 @@ body.dark .skeleton::after {
 
   <!-- MODEL SECTION -->
 <div id="modelSection">
-  <div class="filters-title">2. Choose Model</div>
+ <div class="filters-title" data-i18n="chooseModel">2. Choose Model</div>
   <div id="modelButtons" class="buttons"></div>
 </div>
 
@@ -1231,24 +1231,7 @@ addAnnouncementBtn.onclick = () => {
 }
 
 
-  // b.classList.add("active");
-  // activeModel = m;
-  // saveLastState();
-
-  // 📱 Mobile behavior only
-  if (window.innerWidth <= 600) {
-    document.body.className = "m-video-only";
-
-    document.getElementById("crumbBrand").textContent =
-      activeBrand.toUpperCase();
-
-    document.getElementById("crumbModel").textContent =
-      activeModel;
-  }
-
-  render();
-};
-
+ 
 
       function initBrandState() {
   const stored = localStorage.getItem("lastBrand");
@@ -1925,6 +1908,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
