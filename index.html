@@ -309,6 +309,34 @@
       .mobile-only{display:inline-flex}
     }
 
+
+    /* 📱 MOBILE STEP FLOW */
+@media (max-width: 600px) {
+
+  body.m-brand-only #modelSection,
+  body.m-brand-only #videos,
+  body.m-brand-only #empty,
+  body.m-brand-only #mobileBreadcrumb {
+    display: none;
+  }
+
+  body.m-model-only #brandSection,
+  body.m-model-only #videos,
+  body.m-model-only #empty {
+    display: none;
+  }
+
+  body.m-video-only #brandSection,
+  body.m-video-only #modelSection {
+    display: none;
+  }
+
+  #mobileBreadcrumb {
+    display: flex;
+  }
+}
+
+
     /* ---- LOADING SKELETONS ---- */
 .skeleton-card {
   height: 260px;
@@ -514,6 +542,8 @@ body.dark .skeleton::after {
 
 
 
+
+
   <!-- Side menu for mobile -->
   <div id="sideBackdrop" class="side-backdrop"></div>
   <div id="sideMenu" class="side-menu">
@@ -582,16 +612,26 @@ body.dark .skeleton::after {
     </div>
 
 
-    <div class="filters-title" data-i18n="chooseBrand">1. Choose Brand</div>
-    <div id="brandButtons" class="buttons">
+   <!-- BRAND SECTION -->
+<div id="brandSection">
+  <div class="filters-title">1. Choose Brand</div>
+  <div id="brandButtons" class="buttons">
+    <!-- existing brand buttons stay here -->
+
       <button class="filter-btn" data-brand="hero">Hero MotoCorp</button>
       <button class="filter-btn" data-brand="bajaj">Bajaj Auto</button>
       <button class="filter-btn" data-brand="tvs">TVS Motor</button>
       <button class="filter-btn" data-brand="royal">Royal Enfield</button>
     </div>
+  </div>
+     
 
-    <div class="filters-title" data-i18n="chooseModel">2. Choose Model</div>
-    <div id="modelButtons" class="buttons"></div>
+
+  <!-- MODEL SECTION -->
+<div id="modelSection">
+  <div class="filters-title">2. Choose Model</div>
+  <div id="modelButtons" class="buttons"></div>
+</div>
 
     <div id="skeletons" class="video-grid">
   <div class="skeleton-card"></div>
@@ -599,7 +639,20 @@ body.dark .skeleton::after {
   <div class="skeleton-card"></div>
 </div>
 
-
+    <!-- MOBILE BREADCRUMB -->
+  <div id="mobileBreadcrumb" style="
+  display:none;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  margin-bottom:10px;
+">
+  <b id="crumbBrand" style="cursor:pointer;color:#2563eb;"></b>
+  <span>→</span>
+  <span id="crumbModel"></span>
+</div>
+    
+<!--VIDEOS   -->
     <div id="empty" data-i18n="noVideos">No videos yet.</div>
     <div id="videos" class="video-grid"></div>
   </main>
@@ -724,6 +777,15 @@ body.dark .skeleton::after {
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
+
+    function isMobile(){
+  return window.innerWidth <= 600;
+}
+
+if (isMobile()) {
+  document.body.className = "m-brand-only";
+}
+
     document.addEventListener("DOMContentLoaded", function () {
 const announcementBar = document.getElementById("announcementBar");
 const announcementText = document.getElementById("announcementText");
@@ -1134,18 +1196,28 @@ addAnnouncementBtn.onclick = () => {
           const isActive = (m === initialModel);
           b.className="filter-btn" + (isActive ? " active" : "");
           b.innerText=m;
-          b.onclick=()=>{
-            document.querySelectorAll("#modelButtons .filter-btn").forEach(x=>x.classList.remove("active"));
-            b.classList.add("active");
-            activeModel=m;
-            saveLastState();
-            render();
-          };
-          modelArea.appendChild(b);
-          if(isActive) activeModel = m;
-        });
-        saveLastState();
-      }
+       b.onclick = ()=>{
+  document.querySelectorAll("#modelButtons .filter-btn")
+    .forEach(x=>x.classList.remove("active"));
+
+  b.classList.add("active");
+  activeModel = m;
+  saveLastState();
+
+  // 📱 Mobile behavior only
+  if (window.innerWidth <= 600) {
+    document.body.className = "m-video-only";
+
+    document.getElementById("crumbBrand").textContent =
+      activeBrand.toUpperCase();
+
+    document.getElementById("crumbModel").textContent =
+      activeModel;
+  }
+
+  render();
+};
+
 
       function initBrandState() {
   const stored = localStorage.getItem("lastBrand");
@@ -1162,17 +1234,23 @@ loadModels(null);
 
 
       const brandButtons = document.querySelectorAll("#brandButtons .filter-btn");
-     brandButtons.forEach(btn=>{
-  btn.addEventListener("click", ()=>{
+   brandButtons.forEach(btn=>{
+  btn.onclick = ()=>{
     activeBrand = btn.dataset.brand;
     localStorage.setItem("lastBrand", activeBrand);
     localStorage.removeItem("lastModel");
 
     applyBrandUI();
     loadModels(null);
+
+    if (isMobile()) {
+      document.body.className = "m-model-only";
+    }
+
     render();
-  });
+  };
 });
+
       // Search
       search.oninput=render;
 
@@ -1615,6 +1693,17 @@ auth.onAuthStateChanged((user) => {
         };
         reader.readAsText(file);
       };
+// Reset mobile flow
+      document.getElementById("crumbBrand").onclick = ()=>{
+  if (!isMobile()) return;
+
+  activeModel = null;
+  localStorage.removeItem("lastModel");
+
+  document.body.className = "m-brand-only";
+  render();
+};
+
 
       /* ---------- FIRESTORE LISTENER ---------- */
       db.collection("videos").orderBy("createdAt","asc")
@@ -1798,6 +1887,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
