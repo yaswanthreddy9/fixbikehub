@@ -600,6 +600,7 @@ body.dark .skeleton::after {
     </textarea>
 
     <button id="addAnnouncementBtn">Add Announcement</button>
+<div id="announcementList" style="margin-top:10px;font-size:12px;"></div>
 
 <!-- 
     <button id="saveAnnouncementBtn" style="margin-top:6px;">
@@ -1647,7 +1648,67 @@ db.collection("siteConfig").doc("announcements")
     }else{
       announcementBar.style.display = "none";
     }
+    // 🔹 Admin list
+renderAdminAnnouncements(data.items || []);
   });
+
+      const announcementList = document.getElementById("announcementList");
+
+function renderAdminAnnouncements(items) {
+  if (!announcementList) return;
+
+  announcementList.innerHTML = "";
+
+  if (!items.length) {
+    announcementList.innerHTML = "<i>No announcements yet</i>";
+    return;
+  }
+
+  items.forEach(a => {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.justifyContent = "space-between";
+    row.style.alignItems = "center";
+    row.style.marginBottom = "6px";
+
+    row.innerHTML = `
+      <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${a.text}
+      </span>
+      <button data-id="${a.id}"
+        style="background:#ef4444;color:white;border:none;
+               padding:2px 6px;border-radius:4px;cursor:pointer;">
+        ✕
+      </button>
+    `;
+
+    row.querySelector("button").onclick = () => deleteAnnouncement(a.id);
+
+    announcementList.appendChild(row);
+  });
+}
+
+
+      function deleteAnnouncement(id) {
+  if (!confirm("Delete this announcement?")) return;
+
+  db.collection("siteConfig").doc("announcements").get()
+    .then(doc => {
+      if (!doc.exists) return;
+
+      const items = doc.data().items || [];
+      const updated = items.filter(a => a.id !== id);
+
+      return db.collection("siteConfig")
+        .doc("announcements")
+        .set({ items: updated });
+    })
+    .catch(err => {
+      console.error("Delete failed", err);
+      alert("Delete failed");
+    });
+}
+
 
 
 
@@ -1702,6 +1763,7 @@ db.collection("siteConfig").doc("announcements")
   </script>
 </body>
 </html>
+
 
 
 
