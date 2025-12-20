@@ -309,6 +309,13 @@
       .mobile-only{display:inline-flex}
     }
 
+    @media (max-width: 600px) {
+  body.m-video-only #empty {
+    margin-top: 10px;
+  }
+}
+
+
 
     /* 📱 MOBILE STEP FLOW */
 @media (max-width: 600px) {
@@ -1125,7 +1132,23 @@ addAnnouncementBtn.onclick = () => {
           videoGrid.appendChild(card);
         });
 
-        empty.style.display = videoGrid.children.length===0 ? "block" : "none";
+        // empty.style.display = videoGrid.children.length===0 ? "block" : "none";
+const hasVideos = videoGrid.children.length > 0;
+
+// Desktop logic unchanged
+if (!isMobile()) {
+  empty.style.display = hasVideos ? "none" : "block";
+  return;
+}
+
+// 📱 Mobile logic
+if (document.body.classList.contains("m-video-only")) {
+  empty.style.display = hasVideos ? "none" : "block";
+} else {
+  empty.style.display = "none";
+}
+
+    
       }
 
       /* ---------- SAVE / LOAD LAST STATE ---------- */
@@ -1767,6 +1790,18 @@ auth.onAuthStateChanged((user) => {
           });
           updateLastUpdated(latest);
           render();
+
+        // 📱 Ensure correct mobile state after videos load
+if (isMobile()) {
+  if (localStorage.getItem("lastModel")) {
+    document.body.className = "m-video-only";
+  } else if (localStorage.getItem("lastBrand")) {
+    document.body.className = "m-model-only";
+  } else {
+    document.body.className = "m-brand-only";
+  }
+}
+
         });
 let announcementIndex = 0;
 let announcementTimer = null;
@@ -1921,6 +1956,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
