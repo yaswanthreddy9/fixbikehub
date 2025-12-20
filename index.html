@@ -1077,16 +1077,13 @@ addAnnouncementBtn.onclick = () => {
   videos.forEach(v => {
     let visible = true;
 if (viewMode === "bike") {
-  // No model selected → show nothing
-  if (!activeModel) {
-    visible = false;
-  } else {
-    visible =
-      v.brand === activeBrand &&
-      v.model === activeModel &&
-      v.title.toLowerCase().includes(q);
-  }
+  visible =
+    v.brand === activeBrand &&
+    activeModel &&
+    v.model === activeModel &&
+    v.title.toLowerCase().includes(q);
 }
+
 
  else {
       visible = v.title.toLowerCase().includes(q);
@@ -1244,7 +1241,17 @@ function loadModels(preferredModel) {
 
 initBrandState();
 applyBrandUI();
-loadModels(null);
+const savedBrand = localStorage.getItem("lastBrand");
+const savedModel = localStorage.getItem("lastModel");
+
+if (savedBrand && models[savedBrand]) {
+  activeBrand = savedBrand;
+}
+
+applyBrandUI();
+loadModels(savedModel); // ✅ IMPORTANT
+render();
+
       // Initial state
 showModelSection(!activeModel);
 
@@ -1914,6 +1921,7 @@ function renderAdminAnnouncements(items) {
   </script>
 </body>
 </html>
+
 
 
 
